@@ -1,0 +1,1561 @@
+<html>
+
+<head>
+    <title>Dots and Boxes</title>
+
+    <head>
+        <title>Dots and Boxes</title>
+
+    </head>
+</head>
+<script language="JavaScript">
+    <!-- Begin
+        
+    function restart() {
+        var i,j,x;
+        score[0]=0;
+        score[1]=0;
+        for (i=0;i<=m;i++) {
+            x=2*i*nn+1
+            for (j=0;j<n;j++) {
+                document.images[x+2*j].src=n3.src;
+                hedge[i][j]=0;
+            }
+        }
+        for (i=0;i<m;i++) {
+            x=(2*i+1)*nn
+            for (j=0;j<=n;j++) {
+                document.images[x+2*j].src=n3.src;
+                vedge[i][j]=0;
+            }
+        }
+        for (i=0;i<m;i++) {
+            x=(2*i+1)*nn+1
+            for (j=0;j<n;j++) {
+                document.images[x+2*j].src=n3.src;
+                box[i][j]=0;
+            }
+        }
+        if (player!=1) makemove();
+    }
+    
+    function hmove(i,j) {     //horizontal move by user
+        if (hedge[i][j]<1) {
+            sethedge(i,j);
+            if (score[0]+score[1]==m*n) {
+                alert("Game over.\r Score: Red = "+score[0]+",  Blue = "+score[1])
+            } else if (player==0) makemove();
+        }
+    }
+    
+    function vmove(i,j) {     //vertical move by user
+        if (vedge[i][j]<1) {
+            setvedge(i,j);
+            if (score[0]+score[1]==m*n) {
+                alert("Game over.\r Score: Red = "+score[0]+",  Blue = "+score[1])
+            } else if (player==0) makemove();
+        }
+    }
+    
+    function sethedge(x,y) {      //Sets horizontal edge
+        hedge[x][y]=1;
+        if (x>0) box[x-1][y]++;
+        if (x<m) box[x][y]++;
+        document.images[2*x*nn+2*y+1].src=n2.src;
+        checkh(x,y)
+        player=1-player;
+    }
+    
+    function setvedge(x,y) {      //Sets vertical edge
+         vedge[x][y]=1;
+        if (y>0) box[x][y-1]++;
+        if (y<n) box[x][y]++;
+        document.images[(2*x+1)*nn+2*y].src=n2.src;
+        checkv(x,y)
+        player=1-player;
+    }
+    
+    function takeedge(zz,x,y) {    //Set hedge if zz=1 and vedge if zz=2.
+        if (zz>1) setvedge(x,y);
+        else sethedge(x,y);
+    }
+    
+    function makemove() {
+        takesafe3s();
+        if (sides3()) {
+            if (sides01()) {
+                takeall3s();
+                takeedge(zz,x,y);
+            } else {
+                sac(u,v)
+            }	
+            if (score[0]+score[1]==m*n) {
+                alert("Game over.\r Score: Red = "+score[0]+",  Blue = "+score[1])
+            }
+        } else if (sides01()) takeedge(zz,x,y);
+        else if (singleton()) takeedge(zz,x,y);
+        else if (doubleton()) takeedge(zz,x,y);
+        else makeanymove();
+    }
+    
+    function takesafe3s() {     //Take all singleton and doubleton 3's.
+        for (var i=0;i<m;i++) {
+            for (var j=0;j<n;j++) {
+                if (box[i][j]==3) {
+                    if (vedge[i][j]<1) {
+                        if (j==0 || box[i][j-1]!=2) setvedge(i,j);
+                    } else if (hedge[i][j]<1) {
+                        if (i==0 || box[i-1][j]!=2) sethedge(i,j);
+                    } else if (vedge[i][j+1]<1) {
+                        if (j==n-1 || box[i][j+1]!=2) setvedge(i,j+1);
+                    } else {
+                        if (i==m-1 || box[i+1][j]!=2) sethedge(i+1,j);
+                    }
+                }
+            }
+        }
+    }
+    
+    function sides3() {     //Returns true and u,v if there is a box(u,v)=3.
+        for (var i=0;i<m;i++) {
+            for (var j=0;j<n;j++) {
+                if (box[i][j]==3) {
+                    u=i;
+                    v=j;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    function takeall3s() {
+        while (sides3()) takebox(u,v);
+    }
+    
+    function sides01() {     //Returns true and zz,x,y if there is a safe edge(x,y).
+        if (Math.random()<.5) zz=1; else zz=2;  //zz=1 if horizontal, zz=2 if vertical
+        var i=Math.floor(m*Math.random());
+        var j=Math.floor(n*Math.random());
+        if (zz==1) {
+            if (randhedge(i,j)) return true;
+            else {
+                zz=2;
+                if (randvedge(i,j)) return true;
+            }
+        } else {
+            if (randvedge(i,j)) return true;
+            else {
+                zz=1;
+                if (randhedge(i,j)) return true;
+            }
+        }
+        return false;
+    }
+    
+    function safehedge(i,j) {     //Returns true if (i,j) is a safe hedge
+        if (hedge[i][j]<1) {
+            if (i==0) {
+                if (box[i][j]<2) return true
+            } else if (i==m) {
+                if (box[i-1][j]<2) return true
+            }
+            else if (box[i][j]<2 && box[i-1][j]<2) return true;
+        }
+        return false
+    }
+    
+    function safevedge(i,j) {
+        if (vedge[i][j]<1) {
+            if (j==0) {
+                if (box[i][j]<2) return true
+            } else if (j==n) {
+                if (box[i][j-1]<2) return true
+            }
+            else if (box[i][j]<2 && box[i][j-1]<2) return true;
+        }
+        return false
+    }
+    
+    function randhedge(i,j) {
+        x=i;
+        y=j;
+        do {
+            if (safehedge(x,y)) return true;
+            else {
+                y++;
+                if (y==n) {
+                    y=0;
+                    x++;
+                    if (x>m) x=0;
+                }
+            }
+        } while (x!=i || y!=j);
+        return false
+    }
+    
+    function randvedge(i,j) {
+        x=i;
+        y=j;
+        do {
+            if (safevedge(x,y)) return true;
+            else {
+                y++;
+                if (y>n) {
+                    y=0;
+                    x++;
+                    if (x==m) x=0;
+                }
+            }
+        } while (x!=i || y!=j);
+        return false
+    }
+        
+    function singleton() {     //Returns true and zz,x,y if edge(x,y) gives exactly
+        var numb;              //1 square away
+        for (var i=0;i<m;i++) {
+            for (var j=0;j<n;j++) {
+                if (box[i][j]==2) {
+                    numb=0;
+                    if (hedge[i][j]<1) {
+                        if (i<1 || box[i-1][j]<2) numb++;
+                    }
+                    zz=2;
+                    if (vedge[i][j]<1) {
+                        if (j<1 || box[i][j-1]<2) numb++;
+                        if (numb>1) {
+                            x=i;
+                            y=j;
+                            return true;
+                        }
+                    }
+                    if (vedge[i][j+1]<1) {
+                        if (j+1==n || box[i][j+1]<2) numb++;
+                        if (numb>1) {
+                            x=i;
+                            y=j+1;
+                            return true;
+                        }
+                    }
+                    zz=1;
+                    if (hedge[i+1][j]<1) {
+                        if (i+1==m || box[i+1][j]<2) numb++;
+                        if (numb>1) {
+                            x=i+1;
+                            y=j;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    function doubleton() {     //Returns true and zz,x,y if edge(x,y) gives away 
+        zz=2;                  //exactly 2 squares
+        for (i=0;i<m;i++) {
+            for (j=0;j<n-1;j++) {
+                if (box[i][j]==2 && box[i][j+1]==2 && vedge[i][j+1]<1) {
+                    if (ldub(i,j) && rdub(i,j+1)) {
+                        x=i;
+                        y=j+1;
+                        return true;
+                    }
+                }
+            }
+        }
+        zz=1;
+        for (j=0;j<n;j++) {
+            for (i=0;i<m-1;i++) {
+                if (box[i][j]==2 && box[i+1][j]==2 && hedge[i+1][j]<1) {
+                    if (udub(i,j) && ddub(i+1,j)) {
+                        x=i+1;
+                        y=j;
+                        return true;
+                    }
+                }
+            }
+        }
+        return false
+    }
+    
+    function ldub(i,j) {      //Given box(i,j)=2 and vedge(i,j+1)=0, returns true
+        if (vedge[i][j]<1) {      //if the other free edge leads to a box<2
+            if (j<1 || box[i][j-1]<2) return true; 
+        } else if (hedge[i][j]<1) {
+            if (i<1 || box[i-1][j]<2) return true;
+        } else if (i==m-1|| box[i+1][j]<2) {
+            return true
+        }
+        return false
+    }
+    
+    function rdub(i,j) {
+        if (vedge[i][j+1]<1) {
+            if (j+1==n || box[i][j+1]<2) return true;
+        } else if (hedge[i][j]<1) {
+            if (i<1 || box[i-1][j]<2) return true;
+        } else if (i+1==m || box[i+1][j]<2) {
+            return true
+        }
+        return false
+    }
+                    
+    function udub(i,j) {
+        if (hedge[i][j]<1) {
+            if (i<1 || box[i-1][j]<2) return true;
+        } else if (vedge[i][j]<1) {
+            if (j<1 || box[i][j-1]<2) return true;
+        } else if (j==n-1 || box[i][j+1]<2) {
+            return true
+        }
+        return false
+    }
+    
+    function ddub(i,j) {
+        if (hedge[i+1][j]<1) {
+            if (i==m-1 || box[i+1][j]<2) return true;
+        } else if (vedge[i][j]<1) {
+            if (j<1 || box[i][j-1]<2) return true;
+        } else if (j==n-1 || box[i][j+1]<2) {
+            return true
+        }
+        return false
+    }
+    
+    function sac(i,j) {     //sacrifices two squares if there are still 3's
+        count=0;
+        loop=false;
+        incount(0,i,j);
+        if (!loop) takeallbut(i,j);
+        if (count+score[0]+score[1]==m*n) {
+            takeall3s()
+        } else {
+            if (loop) {
+                count=count-2;
+            }
+            outcount(0,i,j);
+            i=m;
+            j=n
+        }
+    }
+    
+    function incount(k,i,j) {  //enter with box[i][j]=3 and k=0
+        count++;               //returns count = number in chain starting at i,j
+        if (k!=1 && vedge[i][j]<1) {     //k=1,2,3,4 means skip left,up,right,down.
+            if (j>0) {
+                if (box[i][j-1]>2) {
+                    count++;
+                    loop=true;
+                } else if (box[i][j-1]>1) incount(3,i,j-1);
+            }
+        } else if (k!=2 && hedge[i][j]<1) {
+            if (i>0) {
+                if (box[i-1][j]>2) {
+                    count++;
+                    loop=true
+                } else if (box[i-1][j]>1) incount(4,i-1,j);
+            }
+        } else if (k!=3 && vedge[i][j+1]<1) {
+            if (j<n-1) {
+                if (box[i][j+1]>2) {
+                    count++;
+                    loop=true
+                } else if (box[i][j+1]>1) incount(1,i,j+1);
+            }
+        } else if (k!=4 && hedge[i+1][j]<1) {
+            if (i<m-1) {
+                if (box[i+1][j]>2) {
+                    count++;
+                    loop=true
+                } else if (box[i+1][j]>1) incount(2,i+1,j);
+            }
+        }
+    }
+    
+    function takeallbut(x,y) {
+        while (sides3not(x,y)) {
+            takebox(u,v);
+        }
+    }
+        
+    function sides3not(x,y) {
+        for (var i=0;i<m;i++) {
+            for (var j=0;j<n;j++) {
+                if (box[i][j]==3) {
+                    if (i!=x || j!=y) {
+                        u=i;
+                        v=j;
+                        return true;
+                    }
+                }
+            }
+        }
+        return false
+    }
+    
+    function takebox(i,j) {
+        if (hedge[i][j]<1) sethedge(i,j);
+        else if (vedge[i][j]<1) setvedge(i,j);
+        else if (hedge[i+1][j]<1) sethedge(i+1,j);
+        else setvedge(i,j+1);
+    }
+    
+    function outcount(k,i,j) {     //Takes all but count-2 squares and exits
+        if (count>0) {
+            if (k!=1 && vedge[i][j]<1) {
+                if (count!=2) setvedge(i,j);
+                count--;
+                outcount(3,i,j-1)
+            } else if (k!=2 && hedge[i][j]<1) {
+                if (count!=2) sethedge(i,j);
+                count--;
+                outcount(4,i-1,j)
+            } else if (k!=3 && vedge[i][j+1]<1) {
+                if (count!=2) setvedge(i,j+1);
+                count--;
+                outcount(1,i,j+1)
+            } else if (k!=4 && hedge[i+1][j]<1) {
+                if (count!=2) sethedge(i+1,j);
+                count--;
+                outcount(2,i+1,j)
+            }
+        }
+    }
+    
+    function makeanymove() {
+        x=-1;
+        for (i=0;i<=m;i++) {
+            for (j=0;j<n;j++) {
+                if (hedge[i][j]<1) {
+                    x=i;
+                    y=j;
+                    i=m+1;
+                    j=n
+                }
+            }
+        }
+        if (x<0) {
+            for (i=0;i<m;i++) {
+                for (j=0;j<=n;j++) {
+                    if (vedge[i][j]<1) {
+                        x=i;
+                        y=j;
+                        i=m;
+                        j=n+1;
+                    }
+                }
+            }
+            setvedge(x,y);
+        } else {
+            sethedge(x,y);
+        }
+        if (player==0) makemove();
+    }
+    
+    function checkh(x,y) {     //check if hedge move scores any points
+        var hit=0;
+        if (x>0) {
+            if (box[x-1][y]==4) {
+                var uu=x-1;
+                document.images[(2*uu+1)*nn+2*y+1].src=flag[player];
+                score[player]++;
+                hit=1;
+            }
+        }
+        if (x<m) {
+            if (box[x][y]==4) {
+                document.images[(2*x+1)*nn+2*y+1].src=flag[player];
+                score[player]++;
+                hit=1;
+            }
+        }
+        if (hit>0) player=1-player;
+    }
+    
+    function checkv(x,y) {
+        var hit=0;
+        if (y>0) {
+            if (box[x][y-1]==4) {
+                var vv=y-1;
+                document.images[(2*x+1)*nn+2*vv+1].src=flag[player];
+                score[player]++;
+                hit=1;
+            }
+        }
+        if (y<n) {
+            if (box[x][y]==4) {
+                document.images[(2*x+1)*nn+2*y+1].src=flag[player];
+                score[player]++;
+                hit=1;
+            }
+        }
+        if (hit>0) player=1-player;
+    }
+    
+     //  End -->
+</script>
+
+<body data-new-gr-c-s-check-loaded="14.1243.0" data-gr-ext-installed="">
+    <center>
+        <h1>Dots and Boxes</h1>
+        <script language="JavaScript">
+            <!-- Begin
+            
+            var m;
+            var n;
+            
+            n0 = new Image();
+            n1 = new Image();
+            n2 = new Image();
+            n3 = new Image();
+            
+            n0.src = "red.gif";
+            n1.src = "blue.gif";
+            n2.src = "black.gif";
+            n3.src = "blank.gif";
+            
+            var flag = [n0.src,n1.src];
+            var player=1;
+            var score=[0,0];
+            var hedge=[];
+            var vedge=[];
+            var box=[];
+            var nn,x,y,zz,count,loop,u,v;
+            
+            function getInput() {
+                do {
+                    m=window.prompt("Enter number of rows between 3 and 9.","4");
+                } while (m<3 || m>9);
+                do {
+                    n=window.prompt("Enter number of columns between 3 and 9.","4");
+                } while (n<3 || n>9);
+                for (var i=0;i<=m;i++) {
+                    hedge[i]=[];
+                    for (var j=0;j<n;j++) hedge[i][j]=0;
+                }
+                for (i=0;i<m;i++) {
+                    vedge[i]=[];
+                    for (j=0;j<=n;j++) vedge[i][j]=0;
+                }
+                for (i=0;i<m;i++) {
+                    box[i]=[];
+                    for (j=0;j<n;j++) box[i][j]=0;
+                }
+                nn=2*n+1;
+            }
+            getInput();
+            
+            document.write('<form name="f">')
+            document.write('<table bgcolor=#ffffff border="0" cellpadding="0" cellspacing="0"><tr>')
+            for (i=0;i<m;i++) {
+                for (j=0;j<n;j++) {
+                    document.write('<td align=center><img src="black.gif" border=0 width=8 height=8></td>');
+                    document.write('<td align=center><a href="javascript:hmove('+i+','+j+')"'
+                    +' onMouseover="javascript:if (hedge['+i+']['+j+']<1) document.he'+i+j+'.src=n0.src"'
+                    +' onMouseout="javascript:if (hedge['+i+']['+j+']<1) document.he'+i+j+'.src=n3.src">'
+                    +'<img src="blank.gif" name="he'+i+j+'" border=0 width=36 height=8></a></td>');
+                }
+                document.write('<td align=center><img src="black.gif" width=8 height=8></td></tr><tr>');
+                for (j=0;j<n;j++) {
+                    document.write('<td align=center><a href="javascript:vmove('+i+','+j+')"'
+                    +' onMouseover="javascript:if (vedge['+i+']['+j+']<1) document.ve'+i+j+'.src=n0.src"'
+                    +' onMouseout="javascript:if (vedge['+i+']['+j+']<1) document.ve'+i+j+'.src=n3.src">'
+                    +'<img src="blank.gif" name="ve'+i+j+'" border=0 width=8 height=36></a></td>');
+                    document.write('<td align=center><img name="sq'+i+j
+                    +'" src="blank.gif" border=0 width=36 height=36></td>');
+                }
+                    document.write('<td align=center><a href="javascript:vmove('+i+','+j+')"'
+                    +' onMouseover="javascript:if (vedge['+i+']['+j+']<1) document.ve'+i+j+'.src=n0.src"'
+                    +' onMouseout="javascript:if (vedge['+i+']['+j+']<1) document.ve'+i+j+'.src=n3.src">'
+                    +'<img src="blank.gif" name="ve'+i+j+'" border=0 width=8 height=36></a></td></tr>');
+            }
+            for (j=0;j<n;j++) {
+                document.write('<td align=center><img src="black.gif" border=0 width=8 height=8></td>');
+                    document.write('<td align=center><a href="javascript:hmove('+i+','+j+')"'
+                    +' onMouseover="javascript:if (hedge['+i+']['+j+']<1) document.he'+i+j+'.src=n0.src"'
+                    +' onMouseout="javascript:if (hedge['+i+']['+j+']<1) document.he'+i+j+'.src=n3.src">'
+                    +'<img src="blank.gif" name="he'+i+j+'" border=0 width=36 height=8></a></td>');
+            }
+            document.write('<td align=center><img src="black.gif" border=0 width=8 height=8></td></tr>');
+            document.write('</table><hr>');
+            document.write('<INPUT TYPE="button" VALUE="Reset" onClick="restart()">');
+            document.write('</form>');
+            
+             //  End -->
+        </script>
+        <form name="f">
+            <table bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0">
+                <tbody>
+                    <tr>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(0,0)"
+                                onmouseover="javascript:if (hedge[0][0]&lt;1) document.he00.src=n0.src"
+                                onmouseout="javascript:if (hedge[0][0]&lt;1) document.he00.src=n3.src"><img
+                                    src="https://www.math.ucla.edu/~tom/Games/blank.gif" name="he00" border="0"
+                                    width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(0,1)"
+                                onmouseover="javascript:if (hedge[0][1]&lt;1) document.he01.src=n0.src"
+                                onmouseout="javascript:if (hedge[0][1]&lt;1) document.he01.src=n3.src"><img
+                                    src="https://www.math.ucla.edu/~tom/Games/blank.gif" name="he01" border="0"
+                                    width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(0,2)"
+                                onmouseover="javascript:if (hedge[0][2]&lt;1) document.he02.src=n0.src"
+                                onmouseout="javascript:if (hedge[0][2]&lt;1) document.he02.src=n3.src"><img
+                                    src="blank.gif" name="he02" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(0,3)"
+                                onmouseover="javascript:if (hedge[0][3]&lt;1) document.he03.src=n0.src"
+                                onmouseout="javascript:if (hedge[0][3]&lt;1) document.he03.src=n3.src"><img
+                                    src="blank.gif" name="he03" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(0,4)"
+                                onmouseover="javascript:if (hedge[0][4]&lt;1) document.he04.src=n0.src"
+                                onmouseout="javascript:if (hedge[0][4]&lt;1) document.he04.src=n3.src"><img
+                                    src="blank.gif" name="he04" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(0,5)"
+                                onmouseover="javascript:if (hedge[0][5]&lt;1) document.he05.src=n0.src"
+                                onmouseout="javascript:if (hedge[0][5]&lt;1) document.he05.src=n3.src"><img
+                                    src="blank.gif" name="he05" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(0,6)"
+                                onmouseover="javascript:if (hedge[0][6]&lt;1) document.he06.src=n0.src"
+                                onmouseout="javascript:if (hedge[0][6]&lt;1) document.he06.src=n3.src"><img
+                                    src="blank.gif" name="he06" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(0,7)"
+                                onmouseover="javascript:if (hedge[0][7]&lt;1) document.he07.src=n0.src"
+                                onmouseout="javascript:if (hedge[0][7]&lt;1) document.he07.src=n3.src"><img
+                                    src="blank.gif" name="he07" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(0,8)"
+                                onmouseover="javascript:if (hedge[0][8]&lt;1) document.he08.src=n0.src"
+                                onmouseout="javascript:if (hedge[0][8]&lt;1) document.he08.src=n3.src"><img
+                                    src="blank.gif" name="he08" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" width="8" height="8"></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><a href="javascript:vmove(0,0)"
+                                onmouseover="javascript:if (vedge[0][0]&lt;1) document.ve00.src=n0.src"
+                                onmouseout="javascript:if (vedge[0][0]&lt;1) document.ve00.src=n3.src"><img
+                                    src="https://www.math.ucla.edu/~tom/Games/black.gif" name="ve00" border="0"
+                                    width="8" height="36"></a></td>
+                        <td align="center"><img name="sq00" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(0,1)"
+                                onmouseover="javascript:if (vedge[0][1]&lt;1) document.ve01.src=n0.src"
+                                onmouseout="javascript:if (vedge[0][1]&lt;1) document.ve01.src=n3.src"><img
+                                    src="blank.gif" name="ve01" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq01" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(0,2)"
+                                onmouseover="javascript:if (vedge[0][2]&lt;1) document.ve02.src=n0.src"
+                                onmouseout="javascript:if (vedge[0][2]&lt;1) document.ve02.src=n3.src"><img
+                                    src="blank.gif" name="ve02" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq02" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(0,3)"
+                                onmouseover="javascript:if (vedge[0][3]&lt;1) document.ve03.src=n0.src"
+                                onmouseout="javascript:if (vedge[0][3]&lt;1) document.ve03.src=n3.src"><img
+                                    src="blank.gif" name="ve03" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq03" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(0,4)"
+                                onmouseover="javascript:if (vedge[0][4]&lt;1) document.ve04.src=n0.src"
+                                onmouseout="javascript:if (vedge[0][4]&lt;1) document.ve04.src=n3.src"><img
+                                    src="blank.gif" name="ve04" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq04" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(0,5)"
+                                onmouseover="javascript:if (vedge[0][5]&lt;1) document.ve05.src=n0.src"
+                                onmouseout="javascript:if (vedge[0][5]&lt;1) document.ve05.src=n3.src"><img
+                                    src="blank.gif" name="ve05" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq05" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(0,6)"
+                                onmouseover="javascript:if (vedge[0][6]&lt;1) document.ve06.src=n0.src"
+                                onmouseout="javascript:if (vedge[0][6]&lt;1) document.ve06.src=n3.src"><img
+                                    src="blank.gif" name="ve06" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq06" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(0,7)"
+                                onmouseover="javascript:if (vedge[0][7]&lt;1) document.ve07.src=n0.src"
+                                onmouseout="javascript:if (vedge[0][7]&lt;1) document.ve07.src=n3.src"><img
+                                    src="blank.gif" name="ve07" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq07" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(0,8)"
+                                onmouseover="javascript:if (vedge[0][8]&lt;1) document.ve08.src=n0.src"
+                                onmouseout="javascript:if (vedge[0][8]&lt;1) document.ve08.src=n3.src"><img
+                                    src="blank.gif" name="ve08" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq08" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(0,9)"
+                                onmouseover="javascript:if (vedge[0][9]&lt;1) document.ve09.src=n0.src"
+                                onmouseout="javascript:if (vedge[0][9]&lt;1) document.ve09.src=n3.src"><img
+                                    src="blank.gif" name="ve09" border="0" width="8" height="36"></a></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(1,0)"
+                                onmouseover="javascript:if (hedge[1][0]&lt;1) document.he10.src=n0.src"
+                                onmouseout="javascript:if (hedge[1][0]&lt;1) document.he10.src=n3.src"><img
+                                    src="blank.gif" name="he10" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(1,1)"
+                                onmouseover="javascript:if (hedge[1][1]&lt;1) document.he11.src=n0.src"
+                                onmouseout="javascript:if (hedge[1][1]&lt;1) document.he11.src=n3.src"><img
+                                    src="blank.gif" name="he11" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(1,2)"
+                                onmouseover="javascript:if (hedge[1][2]&lt;1) document.he12.src=n0.src"
+                                onmouseout="javascript:if (hedge[1][2]&lt;1) document.he12.src=n3.src"><img
+                                    src="blank.gif" name="he12" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(1,3)"
+                                onmouseover="javascript:if (hedge[1][3]&lt;1) document.he13.src=n0.src"
+                                onmouseout="javascript:if (hedge[1][3]&lt;1) document.he13.src=n3.src"><img
+                                    src="blank.gif" name="he13" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(1,4)"
+                                onmouseover="javascript:if (hedge[1][4]&lt;1) document.he14.src=n0.src"
+                                onmouseout="javascript:if (hedge[1][4]&lt;1) document.he14.src=n3.src"><img
+                                    src="blank.gif" name="he14" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(1,5)"
+                                onmouseover="javascript:if (hedge[1][5]&lt;1) document.he15.src=n0.src"
+                                onmouseout="javascript:if (hedge[1][5]&lt;1) document.he15.src=n3.src"><img
+                                    src="blank.gif" name="he15" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(1,6)"
+                                onmouseover="javascript:if (hedge[1][6]&lt;1) document.he16.src=n0.src"
+                                onmouseout="javascript:if (hedge[1][6]&lt;1) document.he16.src=n3.src"><img
+                                    src="blank.gif" name="he16" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(1,7)"
+                                onmouseover="javascript:if (hedge[1][7]&lt;1) document.he17.src=n0.src"
+                                onmouseout="javascript:if (hedge[1][7]&lt;1) document.he17.src=n3.src"><img
+                                    src="blank.gif" name="he17" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(1,8)"
+                                onmouseover="javascript:if (hedge[1][8]&lt;1) document.he18.src=n0.src"
+                                onmouseout="javascript:if (hedge[1][8]&lt;1) document.he18.src=n3.src"><img
+                                    src="blank.gif" name="he18" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" width="8" height="8"></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><a href="javascript:vmove(1,0)"
+                                onmouseover="javascript:if (vedge[1][0]&lt;1) document.ve10.src=n0.src"
+                                onmouseout="javascript:if (vedge[1][0]&lt;1) document.ve10.src=n3.src"><img
+                                    src="blank.gif" name="ve10" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq10" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(1,1)"
+                                onmouseover="javascript:if (vedge[1][1]&lt;1) document.ve11.src=n0.src"
+                                onmouseout="javascript:if (vedge[1][1]&lt;1) document.ve11.src=n3.src"><img
+                                    src="blank.gif" name="ve11" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq11" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(1,2)"
+                                onmouseover="javascript:if (vedge[1][2]&lt;1) document.ve12.src=n0.src"
+                                onmouseout="javascript:if (vedge[1][2]&lt;1) document.ve12.src=n3.src"><img
+                                    src="blank.gif" name="ve12" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq12" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(1,3)"
+                                onmouseover="javascript:if (vedge[1][3]&lt;1) document.ve13.src=n0.src"
+                                onmouseout="javascript:if (vedge[1][3]&lt;1) document.ve13.src=n3.src"><img
+                                    src="blank.gif" name="ve13" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq13" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(1,4)"
+                                onmouseover="javascript:if (vedge[1][4]&lt;1) document.ve14.src=n0.src"
+                                onmouseout="javascript:if (vedge[1][4]&lt;1) document.ve14.src=n3.src"><img
+                                    src="blank.gif" name="ve14" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq14" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(1,5)"
+                                onmouseover="javascript:if (vedge[1][5]&lt;1) document.ve15.src=n0.src"
+                                onmouseout="javascript:if (vedge[1][5]&lt;1) document.ve15.src=n3.src"><img
+                                    src="blank.gif" name="ve15" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq15" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(1,6)"
+                                onmouseover="javascript:if (vedge[1][6]&lt;1) document.ve16.src=n0.src"
+                                onmouseout="javascript:if (vedge[1][6]&lt;1) document.ve16.src=n3.src"><img
+                                    src="blank.gif" name="ve16" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq16" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(1,7)"
+                                onmouseover="javascript:if (vedge[1][7]&lt;1) document.ve17.src=n0.src"
+                                onmouseout="javascript:if (vedge[1][7]&lt;1) document.ve17.src=n3.src"><img
+                                    src="blank.gif" name="ve17" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq17" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(1,8)"
+                                onmouseover="javascript:if (vedge[1][8]&lt;1) document.ve18.src=n0.src"
+                                onmouseout="javascript:if (vedge[1][8]&lt;1) document.ve18.src=n3.src"><img
+                                    src="blank.gif" name="ve18" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq18" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(1,9)"
+                                onmouseover="javascript:if (vedge[1][9]&lt;1) document.ve19.src=n0.src"
+                                onmouseout="javascript:if (vedge[1][9]&lt;1) document.ve19.src=n3.src"><img
+                                    src="blank.gif" name="ve19" border="0" width="8" height="36"></a></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(2,0)"
+                                onmouseover="javascript:if (hedge[2][0]&lt;1) document.he20.src=n0.src"
+                                onmouseout="javascript:if (hedge[2][0]&lt;1) document.he20.src=n3.src"><img
+                                    src="blank.gif" name="he20" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(2,1)"
+                                onmouseover="javascript:if (hedge[2][1]&lt;1) document.he21.src=n0.src"
+                                onmouseout="javascript:if (hedge[2][1]&lt;1) document.he21.src=n3.src"><img
+                                    src="blank.gif" name="he21" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(2,2)"
+                                onmouseover="javascript:if (hedge[2][2]&lt;1) document.he22.src=n0.src"
+                                onmouseout="javascript:if (hedge[2][2]&lt;1) document.he22.src=n3.src"><img
+                                    src="blank.gif" name="he22" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(2,3)"
+                                onmouseover="javascript:if (hedge[2][3]&lt;1) document.he23.src=n0.src"
+                                onmouseout="javascript:if (hedge[2][3]&lt;1) document.he23.src=n3.src"><img
+                                    src="blank.gif" name="he23" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(2,4)"
+                                onmouseover="javascript:if (hedge[2][4]&lt;1) document.he24.src=n0.src"
+                                onmouseout="javascript:if (hedge[2][4]&lt;1) document.he24.src=n3.src"><img
+                                    src="blank.gif" name="he24" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(2,5)"
+                                onmouseover="javascript:if (hedge[2][5]&lt;1) document.he25.src=n0.src"
+                                onmouseout="javascript:if (hedge[2][5]&lt;1) document.he25.src=n3.src"><img
+                                    src="blank.gif" name="he25" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(2,6)"
+                                onmouseover="javascript:if (hedge[2][6]&lt;1) document.he26.src=n0.src"
+                                onmouseout="javascript:if (hedge[2][6]&lt;1) document.he26.src=n3.src"><img
+                                    src="blank.gif" name="he26" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(2,7)"
+                                onmouseover="javascript:if (hedge[2][7]&lt;1) document.he27.src=n0.src"
+                                onmouseout="javascript:if (hedge[2][7]&lt;1) document.he27.src=n3.src"><img
+                                    src="blank.gif" name="he27" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(2,8)"
+                                onmouseover="javascript:if (hedge[2][8]&lt;1) document.he28.src=n0.src"
+                                onmouseout="javascript:if (hedge[2][8]&lt;1) document.he28.src=n3.src"><img
+                                    src="blank.gif" name="he28" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" width="8" height="8"></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><a href="javascript:vmove(2,0)"
+                                onmouseover="javascript:if (vedge[2][0]&lt;1) document.ve20.src=n0.src"
+                                onmouseout="javascript:if (vedge[2][0]&lt;1) document.ve20.src=n3.src"><img
+                                    src="blank.gif" name="ve20" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq20" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(2,1)"
+                                onmouseover="javascript:if (vedge[2][1]&lt;1) document.ve21.src=n0.src"
+                                onmouseout="javascript:if (vedge[2][1]&lt;1) document.ve21.src=n3.src"><img
+                                    src="blank.gif" name="ve21" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq21" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(2,2)"
+                                onmouseover="javascript:if (vedge[2][2]&lt;1) document.ve22.src=n0.src"
+                                onmouseout="javascript:if (vedge[2][2]&lt;1) document.ve22.src=n3.src"><img
+                                    src="blank.gif" name="ve22" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq22" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(2,3)"
+                                onmouseover="javascript:if (vedge[2][3]&lt;1) document.ve23.src=n0.src"
+                                onmouseout="javascript:if (vedge[2][3]&lt;1) document.ve23.src=n3.src"><img
+                                    src="https://www.math.ucla.edu/~tom/Games/black.gif" name="ve23" border="0"
+                                    width="8" height="36"></a></td>
+                        <td align="center"><img name="sq23" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(2,4)"
+                                onmouseover="javascript:if (vedge[2][4]&lt;1) document.ve24.src=n0.src"
+                                onmouseout="javascript:if (vedge[2][4]&lt;1) document.ve24.src=n3.src"><img
+                                    src="blank.gif" name="ve24" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq24" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(2,5)"
+                                onmouseover="javascript:if (vedge[2][5]&lt;1) document.ve25.src=n0.src"
+                                onmouseout="javascript:if (vedge[2][5]&lt;1) document.ve25.src=n3.src"><img
+                                    src="blank.gif" name="ve25" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq25" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(2,6)"
+                                onmouseover="javascript:if (vedge[2][6]&lt;1) document.ve26.src=n0.src"
+                                onmouseout="javascript:if (vedge[2][6]&lt;1) document.ve26.src=n3.src"><img
+                                    src="blank.gif" name="ve26" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq26" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(2,7)"
+                                onmouseover="javascript:if (vedge[2][7]&lt;1) document.ve27.src=n0.src"
+                                onmouseout="javascript:if (vedge[2][7]&lt;1) document.ve27.src=n3.src"><img
+                                    src="blank.gif" name="ve27" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq27" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(2,8)"
+                                onmouseover="javascript:if (vedge[2][8]&lt;1) document.ve28.src=n0.src"
+                                onmouseout="javascript:if (vedge[2][8]&lt;1) document.ve28.src=n3.src"><img
+                                    src="blank.gif" name="ve28" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq28" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(2,9)"
+                                onmouseover="javascript:if (vedge[2][9]&lt;1) document.ve29.src=n0.src"
+                                onmouseout="javascript:if (vedge[2][9]&lt;1) document.ve29.src=n3.src"><img
+                                    src="blank.gif" name="ve29" border="0" width="8" height="36"></a></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(3,0)"
+                                onmouseover="javascript:if (hedge[3][0]&lt;1) document.he30.src=n0.src"
+                                onmouseout="javascript:if (hedge[3][0]&lt;1) document.he30.src=n3.src"><img
+                                    src="blank.gif" name="he30" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(3,1)"
+                                onmouseover="javascript:if (hedge[3][1]&lt;1) document.he31.src=n0.src"
+                                onmouseout="javascript:if (hedge[3][1]&lt;1) document.he31.src=n3.src"><img
+                                    src="blank.gif" name="he31" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(3,2)"
+                                onmouseover="javascript:if (hedge[3][2]&lt;1) document.he32.src=n0.src"
+                                onmouseout="javascript:if (hedge[3][2]&lt;1) document.he32.src=n3.src"><img
+                                    src="blank.gif" name="he32" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(3,3)"
+                                onmouseover="javascript:if (hedge[3][3]&lt;1) document.he33.src=n0.src"
+                                onmouseout="javascript:if (hedge[3][3]&lt;1) document.he33.src=n3.src"><img
+                                    src="blank.gif" name="he33" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(3,4)"
+                                onmouseover="javascript:if (hedge[3][4]&lt;1) document.he34.src=n0.src"
+                                onmouseout="javascript:if (hedge[3][4]&lt;1) document.he34.src=n3.src"><img
+                                    src="blank.gif" name="he34" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(3,5)"
+                                onmouseover="javascript:if (hedge[3][5]&lt;1) document.he35.src=n0.src"
+                                onmouseout="javascript:if (hedge[3][5]&lt;1) document.he35.src=n3.src"><img
+                                    src="blank.gif" name="he35" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(3,6)"
+                                onmouseover="javascript:if (hedge[3][6]&lt;1) document.he36.src=n0.src"
+                                onmouseout="javascript:if (hedge[3][6]&lt;1) document.he36.src=n3.src"><img
+                                    src="blank.gif" name="he36" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(3,7)"
+                                onmouseover="javascript:if (hedge[3][7]&lt;1) document.he37.src=n0.src"
+                                onmouseout="javascript:if (hedge[3][7]&lt;1) document.he37.src=n3.src"><img
+                                    src="blank.gif" name="he37" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(3,8)"
+                                onmouseover="javascript:if (hedge[3][8]&lt;1) document.he38.src=n0.src"
+                                onmouseout="javascript:if (hedge[3][8]&lt;1) document.he38.src=n3.src"><img
+                                    src="blank.gif" name="he38" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" width="8" height="8"></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><a href="javascript:vmove(3,0)"
+                                onmouseover="javascript:if (vedge[3][0]&lt;1) document.ve30.src=n0.src"
+                                onmouseout="javascript:if (vedge[3][0]&lt;1) document.ve30.src=n3.src"><img
+                                    src="blank.gif" name="ve30" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq30" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(3,1)"
+                                onmouseover="javascript:if (vedge[3][1]&lt;1) document.ve31.src=n0.src"
+                                onmouseout="javascript:if (vedge[3][1]&lt;1) document.ve31.src=n3.src"><img
+                                    src="blank.gif" name="ve31" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq31" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(3,2)"
+                                onmouseover="javascript:if (vedge[3][2]&lt;1) document.ve32.src=n0.src"
+                                onmouseout="javascript:if (vedge[3][2]&lt;1) document.ve32.src=n3.src"><img
+                                    src="blank.gif" name="ve32" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq32" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(3,3)"
+                                onmouseover="javascript:if (vedge[3][3]&lt;1) document.ve33.src=n0.src"
+                                onmouseout="javascript:if (vedge[3][3]&lt;1) document.ve33.src=n3.src"><img
+                                    src="blank.gif" name="ve33" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq33" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(3,4)"
+                                onmouseover="javascript:if (vedge[3][4]&lt;1) document.ve34.src=n0.src"
+                                onmouseout="javascript:if (vedge[3][4]&lt;1) document.ve34.src=n3.src"><img
+                                    src="blank.gif" name="ve34" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq34" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(3,5)"
+                                onmouseover="javascript:if (vedge[3][5]&lt;1) document.ve35.src=n0.src"
+                                onmouseout="javascript:if (vedge[3][5]&lt;1) document.ve35.src=n3.src"><img
+                                    src="blank.gif" name="ve35" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq35" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(3,6)"
+                                onmouseover="javascript:if (vedge[3][6]&lt;1) document.ve36.src=n0.src"
+                                onmouseout="javascript:if (vedge[3][6]&lt;1) document.ve36.src=n3.src"><img
+                                    src="blank.gif" name="ve36" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq36" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(3,7)"
+                                onmouseover="javascript:if (vedge[3][7]&lt;1) document.ve37.src=n0.src"
+                                onmouseout="javascript:if (vedge[3][7]&lt;1) document.ve37.src=n3.src"><img
+                                    src="blank.gif" name="ve37" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq37" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(3,8)"
+                                onmouseover="javascript:if (vedge[3][8]&lt;1) document.ve38.src=n0.src"
+                                onmouseout="javascript:if (vedge[3][8]&lt;1) document.ve38.src=n3.src"><img
+                                    src="blank.gif" name="ve38" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq38" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(3,9)"
+                                onmouseover="javascript:if (vedge[3][9]&lt;1) document.ve39.src=n0.src"
+                                onmouseout="javascript:if (vedge[3][9]&lt;1) document.ve39.src=n3.src"><img
+                                    src="blank.gif" name="ve39" border="0" width="8" height="36"></a></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(4,0)"
+                                onmouseover="javascript:if (hedge[4][0]&lt;1) document.he40.src=n0.src"
+                                onmouseout="javascript:if (hedge[4][0]&lt;1) document.he40.src=n3.src"><img
+                                    src="blank.gif" name="he40" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(4,1)"
+                                onmouseover="javascript:if (hedge[4][1]&lt;1) document.he41.src=n0.src"
+                                onmouseout="javascript:if (hedge[4][1]&lt;1) document.he41.src=n3.src"><img
+                                    src="blank.gif" name="he41" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(4,2)"
+                                onmouseover="javascript:if (hedge[4][2]&lt;1) document.he42.src=n0.src"
+                                onmouseout="javascript:if (hedge[4][2]&lt;1) document.he42.src=n3.src"><img
+                                    src="blank.gif" name="he42" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(4,3)"
+                                onmouseover="javascript:if (hedge[4][3]&lt;1) document.he43.src=n0.src"
+                                onmouseout="javascript:if (hedge[4][3]&lt;1) document.he43.src=n3.src"><img
+                                    src="blank.gif" name="he43" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(4,4)"
+                                onmouseover="javascript:if (hedge[4][4]&lt;1) document.he44.src=n0.src"
+                                onmouseout="javascript:if (hedge[4][4]&lt;1) document.he44.src=n3.src"><img
+                                    src="blank.gif" name="he44" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(4,5)"
+                                onmouseover="javascript:if (hedge[4][5]&lt;1) document.he45.src=n0.src"
+                                onmouseout="javascript:if (hedge[4][5]&lt;1) document.he45.src=n3.src"><img
+                                    src="blank.gif" name="he45" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(4,6)"
+                                onmouseover="javascript:if (hedge[4][6]&lt;1) document.he46.src=n0.src"
+                                onmouseout="javascript:if (hedge[4][6]&lt;1) document.he46.src=n3.src"><img
+                                    src="blank.gif" name="he46" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(4,7)"
+                                onmouseover="javascript:if (hedge[4][7]&lt;1) document.he47.src=n0.src"
+                                onmouseout="javascript:if (hedge[4][7]&lt;1) document.he47.src=n3.src"><img
+                                    src="blank.gif" name="he47" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(4,8)"
+                                onmouseover="javascript:if (hedge[4][8]&lt;1) document.he48.src=n0.src"
+                                onmouseout="javascript:if (hedge[4][8]&lt;1) document.he48.src=n3.src"><img
+                                    src="blank.gif" name="he48" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" width="8" height="8"></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><a href="javascript:vmove(4,0)"
+                                onmouseover="javascript:if (vedge[4][0]&lt;1) document.ve40.src=n0.src"
+                                onmouseout="javascript:if (vedge[4][0]&lt;1) document.ve40.src=n3.src"><img
+                                    src="blank.gif" name="ve40" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq40" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(4,1)"
+                                onmouseover="javascript:if (vedge[4][1]&lt;1) document.ve41.src=n0.src"
+                                onmouseout="javascript:if (vedge[4][1]&lt;1) document.ve41.src=n3.src"><img
+                                    src="blank.gif" name="ve41" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq41" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(4,2)"
+                                onmouseover="javascript:if (vedge[4][2]&lt;1) document.ve42.src=n0.src"
+                                onmouseout="javascript:if (vedge[4][2]&lt;1) document.ve42.src=n3.src"><img
+                                    src="blank.gif" name="ve42" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq42" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(4,3)"
+                                onmouseover="javascript:if (vedge[4][3]&lt;1) document.ve43.src=n0.src"
+                                onmouseout="javascript:if (vedge[4][3]&lt;1) document.ve43.src=n3.src"><img
+                                    src="blank.gif" name="ve43" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq43" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(4,4)"
+                                onmouseover="javascript:if (vedge[4][4]&lt;1) document.ve44.src=n0.src"
+                                onmouseout="javascript:if (vedge[4][4]&lt;1) document.ve44.src=n3.src"><img
+                                    src="blank.gif" name="ve44" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq44" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(4,5)"
+                                onmouseover="javascript:if (vedge[4][5]&lt;1) document.ve45.src=n0.src"
+                                onmouseout="javascript:if (vedge[4][5]&lt;1) document.ve45.src=n3.src"><img
+                                    src="blank.gif" name="ve45" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq45" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(4,6)"
+                                onmouseover="javascript:if (vedge[4][6]&lt;1) document.ve46.src=n0.src"
+                                onmouseout="javascript:if (vedge[4][6]&lt;1) document.ve46.src=n3.src"><img
+                                    src="blank.gif" name="ve46" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq46" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(4,7)"
+                                onmouseover="javascript:if (vedge[4][7]&lt;1) document.ve47.src=n0.src"
+                                onmouseout="javascript:if (vedge[4][7]&lt;1) document.ve47.src=n3.src"><img
+                                    src="blank.gif" name="ve47" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq47" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(4,8)"
+                                onmouseover="javascript:if (vedge[4][8]&lt;1) document.ve48.src=n0.src"
+                                onmouseout="javascript:if (vedge[4][8]&lt;1) document.ve48.src=n3.src"><img
+                                    src="blank.gif" name="ve48" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq48" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(4,9)"
+                                onmouseover="javascript:if (vedge[4][9]&lt;1) document.ve49.src=n0.src"
+                                onmouseout="javascript:if (vedge[4][9]&lt;1) document.ve49.src=n3.src"><img
+                                    src="blank.gif" name="ve49" border="0" width="8" height="36"></a></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(5,0)"
+                                onmouseover="javascript:if (hedge[5][0]&lt;1) document.he50.src=n0.src"
+                                onmouseout="javascript:if (hedge[5][0]&lt;1) document.he50.src=n3.src"><img
+                                    src="blank.gif" name="he50" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(5,1)"
+                                onmouseover="javascript:if (hedge[5][1]&lt;1) document.he51.src=n0.src"
+                                onmouseout="javascript:if (hedge[5][1]&lt;1) document.he51.src=n3.src"><img
+                                    src="blank.gif" name="he51" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(5,2)"
+                                onmouseover="javascript:if (hedge[5][2]&lt;1) document.he52.src=n0.src"
+                                onmouseout="javascript:if (hedge[5][2]&lt;1) document.he52.src=n3.src"><img
+                                    src="blank.gif" name="he52" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(5,3)"
+                                onmouseover="javascript:if (hedge[5][3]&lt;1) document.he53.src=n0.src"
+                                onmouseout="javascript:if (hedge[5][3]&lt;1) document.he53.src=n3.src"><img
+                                    src="blank.gif" name="he53" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(5,4)"
+                                onmouseover="javascript:if (hedge[5][4]&lt;1) document.he54.src=n0.src"
+                                onmouseout="javascript:if (hedge[5][4]&lt;1) document.he54.src=n3.src"><img
+                                    src="blank.gif" name="he54" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(5,5)"
+                                onmouseover="javascript:if (hedge[5][5]&lt;1) document.he55.src=n0.src"
+                                onmouseout="javascript:if (hedge[5][5]&lt;1) document.he55.src=n3.src"><img
+                                    src="blank.gif" name="he55" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(5,6)"
+                                onmouseover="javascript:if (hedge[5][6]&lt;1) document.he56.src=n0.src"
+                                onmouseout="javascript:if (hedge[5][6]&lt;1) document.he56.src=n3.src"><img
+                                    src="blank.gif" name="he56" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(5,7)"
+                                onmouseover="javascript:if (hedge[5][7]&lt;1) document.he57.src=n0.src"
+                                onmouseout="javascript:if (hedge[5][7]&lt;1) document.he57.src=n3.src"><img
+                                    src="blank.gif" name="he57" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(5,8)"
+                                onmouseover="javascript:if (hedge[5][8]&lt;1) document.he58.src=n0.src"
+                                onmouseout="javascript:if (hedge[5][8]&lt;1) document.he58.src=n3.src"><img
+                                    src="blank.gif" name="he58" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" width="8" height="8"></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><a href="javascript:vmove(5,0)"
+                                onmouseover="javascript:if (vedge[5][0]&lt;1) document.ve50.src=n0.src"
+                                onmouseout="javascript:if (vedge[5][0]&lt;1) document.ve50.src=n3.src"><img
+                                    src="blank.gif" name="ve50" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq50" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(5,1)"
+                                onmouseover="javascript:if (vedge[5][1]&lt;1) document.ve51.src=n0.src"
+                                onmouseout="javascript:if (vedge[5][1]&lt;1) document.ve51.src=n3.src"><img
+                                    src="blank.gif" name="ve51" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq51" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(5,2)"
+                                onmouseover="javascript:if (vedge[5][2]&lt;1) document.ve52.src=n0.src"
+                                onmouseout="javascript:if (vedge[5][2]&lt;1) document.ve52.src=n3.src"><img
+                                    src="blank.gif" name="ve52" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq52" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(5,3)"
+                                onmouseover="javascript:if (vedge[5][3]&lt;1) document.ve53.src=n0.src"
+                                onmouseout="javascript:if (vedge[5][3]&lt;1) document.ve53.src=n3.src"><img
+                                    src="blank.gif" name="ve53" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq53" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(5,4)"
+                                onmouseover="javascript:if (vedge[5][4]&lt;1) document.ve54.src=n0.src"
+                                onmouseout="javascript:if (vedge[5][4]&lt;1) document.ve54.src=n3.src"><img
+                                    src="blank.gif" name="ve54" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq54" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(5,5)"
+                                onmouseover="javascript:if (vedge[5][5]&lt;1) document.ve55.src=n0.src"
+                                onmouseout="javascript:if (vedge[5][5]&lt;1) document.ve55.src=n3.src"><img
+                                    src="blank.gif" name="ve55" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq55" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(5,6)"
+                                onmouseover="javascript:if (vedge[5][6]&lt;1) document.ve56.src=n0.src"
+                                onmouseout="javascript:if (vedge[5][6]&lt;1) document.ve56.src=n3.src"><img
+                                    src="blank.gif" name="ve56" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq56" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(5,7)"
+                                onmouseover="javascript:if (vedge[5][7]&lt;1) document.ve57.src=n0.src"
+                                onmouseout="javascript:if (vedge[5][7]&lt;1) document.ve57.src=n3.src"><img
+                                    src="blank.gif" name="ve57" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq57" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(5,8)"
+                                onmouseover="javascript:if (vedge[5][8]&lt;1) document.ve58.src=n0.src"
+                                onmouseout="javascript:if (vedge[5][8]&lt;1) document.ve58.src=n3.src"><img
+                                    src="blank.gif" name="ve58" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq58" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(5,9)"
+                                onmouseover="javascript:if (vedge[5][9]&lt;1) document.ve59.src=n0.src"
+                                onmouseout="javascript:if (vedge[5][9]&lt;1) document.ve59.src=n3.src"><img
+                                    src="blank.gif" name="ve59" border="0" width="8" height="36"></a></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(6,0)"
+                                onmouseover="javascript:if (hedge[6][0]&lt;1) document.he60.src=n0.src"
+                                onmouseout="javascript:if (hedge[6][0]&lt;1) document.he60.src=n3.src"><img
+                                    src="blank.gif" name="he60" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(6,1)"
+                                onmouseover="javascript:if (hedge[6][1]&lt;1) document.he61.src=n0.src"
+                                onmouseout="javascript:if (hedge[6][1]&lt;1) document.he61.src=n3.src"><img
+                                    src="blank.gif" name="he61" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(6,2)"
+                                onmouseover="javascript:if (hedge[6][2]&lt;1) document.he62.src=n0.src"
+                                onmouseout="javascript:if (hedge[6][2]&lt;1) document.he62.src=n3.src"><img
+                                    src="blank.gif" name="he62" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(6,3)"
+                                onmouseover="javascript:if (hedge[6][3]&lt;1) document.he63.src=n0.src"
+                                onmouseout="javascript:if (hedge[6][3]&lt;1) document.he63.src=n3.src"><img
+                                    src="blank.gif" name="he63" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(6,4)"
+                                onmouseover="javascript:if (hedge[6][4]&lt;1) document.he64.src=n0.src"
+                                onmouseout="javascript:if (hedge[6][4]&lt;1) document.he64.src=n3.src"><img
+                                    src="blank.gif" name="he64" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(6,5)"
+                                onmouseover="javascript:if (hedge[6][5]&lt;1) document.he65.src=n0.src"
+                                onmouseout="javascript:if (hedge[6][5]&lt;1) document.he65.src=n3.src"><img
+                                    src="blank.gif" name="he65" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(6,6)"
+                                onmouseover="javascript:if (hedge[6][6]&lt;1) document.he66.src=n0.src"
+                                onmouseout="javascript:if (hedge[6][6]&lt;1) document.he66.src=n3.src"><img
+                                    src="blank.gif" name="he66" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(6,7)"
+                                onmouseover="javascript:if (hedge[6][7]&lt;1) document.he67.src=n0.src"
+                                onmouseout="javascript:if (hedge[6][7]&lt;1) document.he67.src=n3.src"><img
+                                    src="blank.gif" name="he67" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(6,8)"
+                                onmouseover="javascript:if (hedge[6][8]&lt;1) document.he68.src=n0.src"
+                                onmouseout="javascript:if (hedge[6][8]&lt;1) document.he68.src=n3.src"><img
+                                    src="blank.gif" name="he68" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" width="8" height="8"></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><a href="javascript:vmove(6,0)"
+                                onmouseover="javascript:if (vedge[6][0]&lt;1) document.ve60.src=n0.src"
+                                onmouseout="javascript:if (vedge[6][0]&lt;1) document.ve60.src=n3.src"><img
+                                    src="blank.gif" name="ve60" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq60" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(6,1)"
+                                onmouseover="javascript:if (vedge[6][1]&lt;1) document.ve61.src=n0.src"
+                                onmouseout="javascript:if (vedge[6][1]&lt;1) document.ve61.src=n3.src"><img
+                                    src="blank.gif" name="ve61" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq61" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(6,2)"
+                                onmouseover="javascript:if (vedge[6][2]&lt;1) document.ve62.src=n0.src"
+                                onmouseout="javascript:if (vedge[6][2]&lt;1) document.ve62.src=n3.src"><img
+                                    src="blank.gif" name="ve62" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq62" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(6,3)"
+                                onmouseover="javascript:if (vedge[6][3]&lt;1) document.ve63.src=n0.src"
+                                onmouseout="javascript:if (vedge[6][3]&lt;1) document.ve63.src=n3.src"><img
+                                    src="blank.gif" name="ve63" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq63" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(6,4)"
+                                onmouseover="javascript:if (vedge[6][4]&lt;1) document.ve64.src=n0.src"
+                                onmouseout="javascript:if (vedge[6][4]&lt;1) document.ve64.src=n3.src"><img
+                                    src="blank.gif" name="ve64" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq64" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(6,5)"
+                                onmouseover="javascript:if (vedge[6][5]&lt;1) document.ve65.src=n0.src"
+                                onmouseout="javascript:if (vedge[6][5]&lt;1) document.ve65.src=n3.src"><img
+                                    src="blank.gif" name="ve65" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq65" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(6,6)"
+                                onmouseover="javascript:if (vedge[6][6]&lt;1) document.ve66.src=n0.src"
+                                onmouseout="javascript:if (vedge[6][6]&lt;1) document.ve66.src=n3.src"><img
+                                    src="blank.gif" name="ve66" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq66" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(6,7)"
+                                onmouseover="javascript:if (vedge[6][7]&lt;1) document.ve67.src=n0.src"
+                                onmouseout="javascript:if (vedge[6][7]&lt;1) document.ve67.src=n3.src"><img
+                                    src="blank.gif" name="ve67" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq67" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(6,8)"
+                                onmouseover="javascript:if (vedge[6][8]&lt;1) document.ve68.src=n0.src"
+                                onmouseout="javascript:if (vedge[6][8]&lt;1) document.ve68.src=n3.src"><img
+                                    src="blank.gif" name="ve68" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq68" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(6,9)"
+                                onmouseover="javascript:if (vedge[6][9]&lt;1) document.ve69.src=n0.src"
+                                onmouseout="javascript:if (vedge[6][9]&lt;1) document.ve69.src=n3.src"><img
+                                    src="blank.gif" name="ve69" border="0" width="8" height="36"></a></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(7,0)"
+                                onmouseover="javascript:if (hedge[7][0]&lt;1) document.he70.src=n0.src"
+                                onmouseout="javascript:if (hedge[7][0]&lt;1) document.he70.src=n3.src"><img
+                                    src="blank.gif" name="he70" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(7,1)"
+                                onmouseover="javascript:if (hedge[7][1]&lt;1) document.he71.src=n0.src"
+                                onmouseout="javascript:if (hedge[7][1]&lt;1) document.he71.src=n3.src"><img
+                                    src="blank.gif" name="he71" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(7,2)"
+                                onmouseover="javascript:if (hedge[7][2]&lt;1) document.he72.src=n0.src"
+                                onmouseout="javascript:if (hedge[7][2]&lt;1) document.he72.src=n3.src"><img
+                                    src="blank.gif" name="he72" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(7,3)"
+                                onmouseover="javascript:if (hedge[7][3]&lt;1) document.he73.src=n0.src"
+                                onmouseout="javascript:if (hedge[7][3]&lt;1) document.he73.src=n3.src"><img
+                                    src="blank.gif" name="he73" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(7,4)"
+                                onmouseover="javascript:if (hedge[7][4]&lt;1) document.he74.src=n0.src"
+                                onmouseout="javascript:if (hedge[7][4]&lt;1) document.he74.src=n3.src"><img
+                                    src="blank.gif" name="he74" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(7,5)"
+                                onmouseover="javascript:if (hedge[7][5]&lt;1) document.he75.src=n0.src"
+                                onmouseout="javascript:if (hedge[7][5]&lt;1) document.he75.src=n3.src"><img
+                                    src="blank.gif" name="he75" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(7,6)"
+                                onmouseover="javascript:if (hedge[7][6]&lt;1) document.he76.src=n0.src"
+                                onmouseout="javascript:if (hedge[7][6]&lt;1) document.he76.src=n3.src"><img
+                                    src="blank.gif" name="he76" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(7,7)"
+                                onmouseover="javascript:if (hedge[7][7]&lt;1) document.he77.src=n0.src"
+                                onmouseout="javascript:if (hedge[7][7]&lt;1) document.he77.src=n3.src"><img
+                                    src="blank.gif" name="he77" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(7,8)"
+                                onmouseover="javascript:if (hedge[7][8]&lt;1) document.he78.src=n0.src"
+                                onmouseout="javascript:if (hedge[7][8]&lt;1) document.he78.src=n3.src"><img
+                                    src="blank.gif" name="he78" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" width="8" height="8"></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><a href="javascript:vmove(7,0)"
+                                onmouseover="javascript:if (vedge[7][0]&lt;1) document.ve70.src=n0.src"
+                                onmouseout="javascript:if (vedge[7][0]&lt;1) document.ve70.src=n3.src"><img
+                                    src="blank.gif" name="ve70" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq70" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(7,1)"
+                                onmouseover="javascript:if (vedge[7][1]&lt;1) document.ve71.src=n0.src"
+                                onmouseout="javascript:if (vedge[7][1]&lt;1) document.ve71.src=n3.src"><img
+                                    src="blank.gif" name="ve71" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq71" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(7,2)"
+                                onmouseover="javascript:if (vedge[7][2]&lt;1) document.ve72.src=n0.src"
+                                onmouseout="javascript:if (vedge[7][2]&lt;1) document.ve72.src=n3.src"><img
+                                    src="blank.gif" name="ve72" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq72" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(7,3)"
+                                onmouseover="javascript:if (vedge[7][3]&lt;1) document.ve73.src=n0.src"
+                                onmouseout="javascript:if (vedge[7][3]&lt;1) document.ve73.src=n3.src"><img
+                                    src="blank.gif" name="ve73" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq73" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(7,4)"
+                                onmouseover="javascript:if (vedge[7][4]&lt;1) document.ve74.src=n0.src"
+                                onmouseout="javascript:if (vedge[7][4]&lt;1) document.ve74.src=n3.src"><img
+                                    src="blank.gif" name="ve74" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq74" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(7,5)"
+                                onmouseover="javascript:if (vedge[7][5]&lt;1) document.ve75.src=n0.src"
+                                onmouseout="javascript:if (vedge[7][5]&lt;1) document.ve75.src=n3.src"><img
+                                    src="blank.gif" name="ve75" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq75" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(7,6)"
+                                onmouseover="javascript:if (vedge[7][6]&lt;1) document.ve76.src=n0.src"
+                                onmouseout="javascript:if (vedge[7][6]&lt;1) document.ve76.src=n3.src"><img
+                                    src="blank.gif" name="ve76" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq76" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(7,7)"
+                                onmouseover="javascript:if (vedge[7][7]&lt;1) document.ve77.src=n0.src"
+                                onmouseout="javascript:if (vedge[7][7]&lt;1) document.ve77.src=n3.src"><img
+                                    src="blank.gif" name="ve77" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq77" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(7,8)"
+                                onmouseover="javascript:if (vedge[7][8]&lt;1) document.ve78.src=n0.src"
+                                onmouseout="javascript:if (vedge[7][8]&lt;1) document.ve78.src=n3.src"><img
+                                    src="blank.gif" name="ve78" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq78" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(7,9)"
+                                onmouseover="javascript:if (vedge[7][9]&lt;1) document.ve79.src=n0.src"
+                                onmouseout="javascript:if (vedge[7][9]&lt;1) document.ve79.src=n3.src"><img
+                                    src="blank.gif" name="ve79" border="0" width="8" height="36"></a></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(8,0)"
+                                onmouseover="javascript:if (hedge[8][0]&lt;1) document.he80.src=n0.src"
+                                onmouseout="javascript:if (hedge[8][0]&lt;1) document.he80.src=n3.src"><img
+                                    src="blank.gif" name="he80" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(8,1)"
+                                onmouseover="javascript:if (hedge[8][1]&lt;1) document.he81.src=n0.src"
+                                onmouseout="javascript:if (hedge[8][1]&lt;1) document.he81.src=n3.src"><img
+                                    src="blank.gif" name="he81" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(8,2)"
+                                onmouseover="javascript:if (hedge[8][2]&lt;1) document.he82.src=n0.src"
+                                onmouseout="javascript:if (hedge[8][2]&lt;1) document.he82.src=n3.src"><img
+                                    src="blank.gif" name="he82" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(8,3)"
+                                onmouseover="javascript:if (hedge[8][3]&lt;1) document.he83.src=n0.src"
+                                onmouseout="javascript:if (hedge[8][3]&lt;1) document.he83.src=n3.src"><img
+                                    src="blank.gif" name="he83" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(8,4)"
+                                onmouseover="javascript:if (hedge[8][4]&lt;1) document.he84.src=n0.src"
+                                onmouseout="javascript:if (hedge[8][4]&lt;1) document.he84.src=n3.src"><img
+                                    src="blank.gif" name="he84" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(8,5)"
+                                onmouseover="javascript:if (hedge[8][5]&lt;1) document.he85.src=n0.src"
+                                onmouseout="javascript:if (hedge[8][5]&lt;1) document.he85.src=n3.src"><img
+                                    src="blank.gif" name="he85" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(8,6)"
+                                onmouseover="javascript:if (hedge[8][6]&lt;1) document.he86.src=n0.src"
+                                onmouseout="javascript:if (hedge[8][6]&lt;1) document.he86.src=n3.src"><img
+                                    src="blank.gif" name="he86" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(8,7)"
+                                onmouseover="javascript:if (hedge[8][7]&lt;1) document.he87.src=n0.src"
+                                onmouseout="javascript:if (hedge[8][7]&lt;1) document.he87.src=n3.src"><img
+                                    src="blank.gif" name="he87" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(8,8)"
+                                onmouseover="javascript:if (hedge[8][8]&lt;1) document.he88.src=n0.src"
+                                onmouseout="javascript:if (hedge[8][8]&lt;1) document.he88.src=n3.src"><img
+                                    src="blank.gif" name="he88" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" width="8" height="8"></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><a href="javascript:vmove(8,0)"
+                                onmouseover="javascript:if (vedge[8][0]&lt;1) document.ve80.src=n0.src"
+                                onmouseout="javascript:if (vedge[8][0]&lt;1) document.ve80.src=n3.src"><img
+                                    src="blank.gif" name="ve80" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq80" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(8,1)"
+                                onmouseover="javascript:if (vedge[8][1]&lt;1) document.ve81.src=n0.src"
+                                onmouseout="javascript:if (vedge[8][1]&lt;1) document.ve81.src=n3.src"><img
+                                    src="blank.gif" name="ve81" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq81" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(8,2)"
+                                onmouseover="javascript:if (vedge[8][2]&lt;1) document.ve82.src=n0.src"
+                                onmouseout="javascript:if (vedge[8][2]&lt;1) document.ve82.src=n3.src"><img
+                                    src="blank.gif" name="ve82" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq82" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(8,3)"
+                                onmouseover="javascript:if (vedge[8][3]&lt;1) document.ve83.src=n0.src"
+                                onmouseout="javascript:if (vedge[8][3]&lt;1) document.ve83.src=n3.src"><img
+                                    src="blank.gif" name="ve83" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq83" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(8,4)"
+                                onmouseover="javascript:if (vedge[8][4]&lt;1) document.ve84.src=n0.src"
+                                onmouseout="javascript:if (vedge[8][4]&lt;1) document.ve84.src=n3.src"><img
+                                    src="blank.gif" name="ve84" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq84" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(8,5)"
+                                onmouseover="javascript:if (vedge[8][5]&lt;1) document.ve85.src=n0.src"
+                                onmouseout="javascript:if (vedge[8][5]&lt;1) document.ve85.src=n3.src"><img
+                                    src="blank.gif" name="ve85" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq85" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(8,6)"
+                                onmouseover="javascript:if (vedge[8][6]&lt;1) document.ve86.src=n0.src"
+                                onmouseout="javascript:if (vedge[8][6]&lt;1) document.ve86.src=n3.src"><img
+                                    src="blank.gif" name="ve86" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq86" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(8,7)"
+                                onmouseover="javascript:if (vedge[8][7]&lt;1) document.ve87.src=n0.src"
+                                onmouseout="javascript:if (vedge[8][7]&lt;1) document.ve87.src=n3.src"><img
+                                    src="blank.gif" name="ve87" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq87" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(8,8)"
+                                onmouseover="javascript:if (vedge[8][8]&lt;1) document.ve88.src=n0.src"
+                                onmouseout="javascript:if (vedge[8][8]&lt;1) document.ve88.src=n3.src"><img
+                                    src="blank.gif" name="ve88" border="0" width="8" height="36"></a></td>
+                        <td align="center"><img name="sq88" src="blank.gif" border="0" width="36" height="36"></td>
+                        <td align="center"><a href="javascript:vmove(8,9)"
+                                onmouseover="javascript:if (vedge[8][9]&lt;1) document.ve89.src=n0.src"
+                                onmouseout="javascript:if (vedge[8][9]&lt;1) document.ve89.src=n3.src"><img
+                                    src="blank.gif" name="ve89" border="0" width="8" height="36"></a></td>
+                    </tr>
+                    <tr>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(9,0)"
+                                onmouseover="javascript:if (hedge[9][0]&lt;1) document.he90.src=n0.src"
+                                onmouseout="javascript:if (hedge[9][0]&lt;1) document.he90.src=n3.src"><img
+                                    src="blank.gif" name="he90" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(9,1)"
+                                onmouseover="javascript:if (hedge[9][1]&lt;1) document.he91.src=n0.src"
+                                onmouseout="javascript:if (hedge[9][1]&lt;1) document.he91.src=n3.src"><img
+                                    src="blank.gif" name="he91" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(9,2)"
+                                onmouseover="javascript:if (hedge[9][2]&lt;1) document.he92.src=n0.src"
+                                onmouseout="javascript:if (hedge[9][2]&lt;1) document.he92.src=n3.src"><img
+                                    src="blank.gif" name="he92" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(9,3)"
+                                onmouseover="javascript:if (hedge[9][3]&lt;1) document.he93.src=n0.src"
+                                onmouseout="javascript:if (hedge[9][3]&lt;1) document.he93.src=n3.src"><img
+                                    src="blank.gif" name="he93" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(9,4)"
+                                onmouseover="javascript:if (hedge[9][4]&lt;1) document.he94.src=n0.src"
+                                onmouseout="javascript:if (hedge[9][4]&lt;1) document.he94.src=n3.src"><img
+                                    src="blank.gif" name="he94" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(9,5)"
+                                onmouseover="javascript:if (hedge[9][5]&lt;1) document.he95.src=n0.src"
+                                onmouseout="javascript:if (hedge[9][5]&lt;1) document.he95.src=n3.src"><img
+                                    src="blank.gif" name="he95" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(9,6)"
+                                onmouseover="javascript:if (hedge[9][6]&lt;1) document.he96.src=n0.src"
+                                onmouseout="javascript:if (hedge[9][6]&lt;1) document.he96.src=n3.src"><img
+                                    src="blank.gif" name="he96" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(9,7)"
+                                onmouseover="javascript:if (hedge[9][7]&lt;1) document.he97.src=n0.src"
+                                onmouseout="javascript:if (hedge[9][7]&lt;1) document.he97.src=n3.src"><img
+                                    src="blank.gif" name="he97" border="0" width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                        <td align="center"><a href="javascript:hmove(9,8)"
+                                onmouseover="javascript:if (hedge[9][8]&lt;1) document.he98.src=n0.src"
+                                onmouseout="javascript:if (hedge[9][8]&lt;1) document.he98.src=n3.src"><img
+                                    src="https://www.math.ucla.edu/~tom/Games/blank.gif" name="he98" border="0"
+                                    width="36" height="8"></a></td>
+                        <td align="center"><img src="black.gif" border="0" width="8" height="8"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <hr><input type="button" value="Reset" onclick="restart()">
+        </form>
+
+    </center>
+
+
+    <hr>
+    <center>
+        Rules: Players take turns joining two horizontally or vertically adjacent<br>
+        dots by a line. A player that completes the fourth side of a square (a box)<br>
+        colors that box and must play again. When all boxes have been colored,<br>
+        the game ends and the player who has colored more boxes wins. You are <br>
+        playing against the computer. The computer is red; you are blue.
+    </center>
+
+    <hr>
+
+    <a href="dots&amp;boxes_hints.html">Strategy Hints</a>.
+
+
+
+</body>
+<grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration>
+
+</html>
