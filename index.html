@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dots and Boxes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="game-header">
+            <h1 class="game-title">Dots and Boxes</h1>
+            <p class="game-subtitle">A classic strategy game for 1-2 players</p>
+            
+            <div class="mode-selector" id="modeSelector">
+                <button class="btn btn-primary mode-btn active" onclick="setGameMode('single')">
+                    <i class="fas fa-robot"></i> Single Player
+                </button>
+                <button class="btn btn-tertiary mode-btn" onclick="setGameMode('multi')">
+                    <i class="fas fa-users"></i> Multiplayer
+                </button>
+            </div>
+            
+            <div class="game-controls">
+                <button class="btn btn-primary" onclick="newGame()">
+                    <i class="fas fa-plus-circle"></i> New Game
+                </button>
+                <button class="btn btn-secondary" onclick="restart()">
+                    <i class="fas fa-redo"></i> Restart
+                </button>
+            </div>
+            
+            <div class="score-display" id="scoreDisplay">
+                <div class="score score-computer">
+                    <span class="score-badge"></span>
+                    <span>Computer: <span id="redScore">0</span></span>
+                </div>
+                <div class="score score-player1">
+                    <span class="score-badge"></span>
+                    <span id="player1Label">You: <span id="blueScore">0</span></span>
+                </div>
+                <div class="score score-player2" style="display:none;">
+                    <span class="score-badge"></span>
+                    <span>Player 2: <span id="greenScore">0</span></span>
+                </div>
+            </div>
+            
+            <div id="turnIndicator" class="turn-indicator">
+                Player 1's turn - Click on a line to make your move
+            </div>
+        </header>
+        
+        <div class="game-board-container">
+            <div id="gameBoard"></div>
+        </div>
+        
+        <div class="game-info">
+            <h3><i class="fas fa-info-circle"></i> How to Play</h3>
+            <ol>
+                <li>Players take turns connecting adjacent dots with lines</li>
+                <li>When you complete the fourth side of a box, you claim it and get another turn</li>
+                <li>The game ends when all boxes are claimed</li>
+                <li>The player with the most boxes wins</li>
+            </ol>
+            <p><strong>Player 1 is blue</strong>, <strong>Player 2 is teal</strong>, and the <strong>computer is red</strong></p>
+        </div>
+    </div>
+    
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Game Over!</h2>
+            </div>
+            <div class="modal-body">
+                <div id="gameOverMessage" class="modal-message"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="document.getElementById('gameOverModal').style.display='none'">
+                    Close
+                </button>
+                <button class="btn btn-primary" onclick="newGame()">
+                    <i class="fas fa-plus-circle"></i> New Game
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Setup Modal -->
+    <div id="setupModal" class="modal" style="display:flex;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Game Setup</h2>
+                <p>Choose your board size</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="rowsInput">Number of Rows (3-10):</label>
+                    <input type="number" id="rowsInput" class="form-control" min="3" max="10" value="5" required>
+                </div>
+                <div class="form-group">
+                    <label for="colsInput">Number of Columns (3-10):</label>
+                    <input type="number" id="colsInput" class="form-control" min="3" max="10" value="5" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="handleSetup()">
+                    <i class="fas fa-play"></i> Start Game
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        var m, n;
+        var gameMode = 'single'; // 'single' or 'multi'
+        var n0 = new Image();
+        var n1 = new Image();
+        var n2 = new Image();
+        var n3 = new Image();
+        
+        n0.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='%23f72585'/%3E%3C/svg%3E";
+        n1.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='%234361ee'/%3E%3C/svg%3E";
+        n2.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='%23212529'/%3E%3C/svg%3E";
+        n3.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='transparent'/%3E%3C/svg%3E";
+        
+        var flag = [n0.src, n1.src];
+        var player = 1; // 1 is player1, 2 is player2/computer
+        var score = [0, 0, 0]; // [computer, player1, player2]
+        var hedge = [];
+        var vedge = [];
+        var box = [];
+        var nn, x, y, zz, count, loop, u, v;
+
+        function setGameMode(mode) {
+            gameMode = mode;
+            const singleBtn = document.querySelector('.mode-btn:nth-child(1)');
+            const multiBtn = document.querySelector('.mode-btn:nth-child(2)');
+            const player1Label = document.getElementById('player1Label');
+            
+            if (mode === 'single') {
+                singleBtn.classList.add('active');
+                multiBtn.classList.remove('active');
+                document.querySelector('.score-player2').style.display = 'none';
+                document.querySelector('.score-computer').style.display = 'flex';
+                player1Label.innerHTML = 'You: <span id="blueScore">0</span>';
+            } else {
+                singleBtn.classList.remove('active');
+                multiBtn.classList.add('active');
+                document.querySelector('.score-player2').style.display = 'flex';
+                document.querySelector('.score-computer').style.display = 'none';
+                player1Label.innerHTML = 'Player 1: <span id="blueScore">0</span>';
+            }
+            
+            // Reset game if already playing
+            if (document.getElementById('gameBoard').innerHTML) {
+                restart();
+            }
+        }
+
+        function newGame() {
+            document.getElementById('setupModal').style.display = 'flex';
+            document.getElementById('gameOverModal').style.display = 'none';
+            updateTurnIndicator();
+        }
+        
+        function handleSetup() {
+            m = parseInt(document.getElementById('rowsInput').value);
+            n = parseInt(document.getElementById('colsInput').value);
+            
+            if (m < 3 || m > 10 || n < 3 || n > 10) {
+                alert("Please enter values between 3 and 10");
+                return;
+            }
+            
+            document.getElementById('setupModal').style.display = 'none';
+            initializeGame();
+        }
+        
+        function initializeGame() {
+            // Reset scores
+            score = [0, 0, 0];
+            updateScores();
+            player = 1;
+            updateTurnIndicator();
+            
+            // Initialize arrays
+            hedge = [];
+            vedge = [];
+            box = [];
+            
+            for (var i = 0; i <= m; i++) {
+                hedge[i] = [];
+                for (var j = 0; j < n; j++) hedge[i][j] = 0;
+            }
+            for (i = 0; i < m; i++) {
+                vedge[i] = [];
+                for (var j = 0; j <= n; j++) vedge[i][j] = 0;
+            }
+            for (i = 0; i < m; i++) {
+                box[i] = [];
+                for (j = 0; j < n; j++) box[i][j] = 0;
+            }
+            nn = 2 * n + 1;
+            
+            // Generate the game board
+            var gameBoardHTML = '<table class="game-board"><tr>';
+            
+            for (i = 0; i < m; i++) {
+                // Top dots and horizontal edges row
+                for (j = 0; j < n; j++) {
+                    gameBoardHTML += '<td><div class="dot"></div></td>';
+                    gameBoardHTML += `<td><div class="horizontal-edge" onclick="hmove(${i},${j})" id="he${i}${j}"></div></td>`;
+                }
+                gameBoardHTML += '<td><div class="dot"></div></td></tr><tr>';
+                
+                // Vertical edges and boxes row
+                for (j = 0; j < n; j++) {
+                    gameBoardHTML += `<td><div class="vertical-edge" onclick="vmove(${i},${j})" id="ve${i}${j}"></div></td>`;
+                    gameBoardHTML += `<td class="box-cell" id="sq${i}${j}"></td>`;
+                }
+                gameBoardHTML += `<td><div class="vertical-edge" onclick="vmove(${i},${j})" id="ve${i}${j}"></div></td></tr>`;
+            }
+            
+            // Bottom dots and horizontal edges row
+            gameBoardHTML += '<tr>';
+            for (j = 0; j < n; j++) {
+                gameBoardHTML += '<td><div class="dot"></div></td>';
+                gameBoardHTML += `<td><div class="horizontal-edge" onclick="hmove(${i},${j})" id="he${i}${j}"></div></td>`;
+            }
+            gameBoardHTML += '<td><div class="dot"></div></td></tr>';
+            gameBoardHTML += '</table>';
+            
+            document.getElementById('gameBoard').innerHTML = gameBoardHTML;
+            
+            // Add hover effects for edges
+            setupEdgeHoverEffects();
+        }
+        
+        function setupEdgeHoverEffects() {
+            // Horizontal edges
+            for (let i = 0; i <= m; i++) {
+                for (let j = 0; j < n; j++) {
+                    const edge = document.getElementById(`he${i}${j}`);
+                    if (edge) {
+                        edge.onmouseover = function() {
+                            if (hedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
+                                const color = player === 1 ? '#4361ee' : '#4cc9f0';
+                                this.style.backgroundColor = color;
+                                this.style.opacity = '0.7';
+                            }
+                        };
+                        edge.onmouseout = function() {
+                            if (hedge[i][j] < 1) {
+                                this.style.backgroundColor = 'transparent';
+                            }
+                        };
+                    }
+                }
+            }
+            
+            // Vertical edges
+            for (let i = 0; i < m; i++) {
+                for (let j = 0; j <= n; j++) {
+                    const edge = document.getElementById(`ve${i}${j}`);
+                    if (edge) {
+                        edge.onmouseover = function() {
+                            if (vedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
+                                const color = player === 1 ? '#4361ee' : '#4cc9f0';
+                                this.style.backgroundColor = color;
+                                this.style.opacity = '0.7';
+                            }
+                        };
+                        edge.onmouseout = function() {
+                            if (vedge[i][j] < 1) {
+                                this.style.backgroundColor = 'transparent';
+                            }
+                        };
+                    }
+                }
+            }
+        }
+        
+        function updateScores() {
+            document.getElementById('redScore').textContent = score[0];
+            document.getElementById('blueScore').textContent = score[1];
+            document.getElementById('greenScore').textContent = score[2];
+        }
+        
+        function updateTurnIndicator() {
+            const indicator = document.getElementById('turnIndicator');
+            if (gameMode === 'single') {
+                if (player === 1) {
+                    indicator.textContent = "Your turn - Click on a line to make your move";
+                    indicator.className = "turn-indicator";
+                } else {
+                    indicator.textContent = "Computer's turn - Thinking...";
+                    indicator.className = "turn-indicator computer-turn";
+                }
+            } else {
+                if (player === 1) {
+                    indicator.textContent = "Player 1's turn (Blue) - Click on a line";
+                    indicator.className = "turn-indicator";
+                } else {
+                    indicator.textContent = "Player 2's turn (Teal) - Click on a line";
+                    indicator.className = "turn-indicator player2-turn";
+                }
+            }
+        }
+        
+        function showGameOver(computerScore, player1Score, player2Score) {
+            var message = "<div style='text-align:center;'>";
+            message += `<p style='font-size:1.2rem; margin-bottom:1rem;'>Final Score:</p>`;
+            
+            if (gameMode === 'single') {
+                message += `<p style='color:#f72585; font-weight:600;'>Computer: ${computerScore}</p>`;
+                message += `<p style='color:#4361ee; font-weight:600; margin-bottom:1.5rem;'>You: ${player1Score}</p>`;
+            } else {
+                message += `<p style='color:#4361ee; font-weight:600;'>Player 1: ${player1Score}</p>`;
+                message += `<p style='color:#4cc9f0; font-weight:600; margin-bottom:1.5rem;'>Player 2: ${player2Score}</p>`;
+            }
+            
+            let winnerMessage = "";
+            if (gameMode === 'single') {
+                if (computerScore > player1Score) {
+                    winnerMessage = `<h3 style='color:#f72585; margin-bottom:1rem;'>Computer wins!</h3>`;
+                } else if (player1Score > computerScore) {
+                    winnerMessage = `<h3 style='color:#4361ee; margin-bottom:1rem;'>You win! Congratulations!</h3>`;
+                    createConfetti();
+                } else {
+                    winnerMessage = `<h3 style='color:#6c757d; margin-bottom:1rem;'>It's a tie!</h3>`;
+                }
+            } else {
+                if (player1Score > player2Score) {
+                    winnerMessage = `<h3 style='color:#4361ee; margin-bottom:1rem;'>Player 1 wins!</h3>`;
+                    createConfetti('blue');
+                } else if (player2Score > player1Score) {
+                    winnerMessage = `<h3 style='color:#4cc9f0; margin-bottom:1rem;'>Player 2 wins!</h3>`;
+                    createConfetti('teal');
+                } else {
+                    winnerMessage = `<h3 style='color:#6c757d; margin-bottom:1rem;'>It's a tie!</h3>`;
+                }
+            }
+            
+            message += winnerMessage;
+            message += "</div>";
+            
+            // Update the turn indicator with final message
+            const turnIndicator = document.getElementById('turnIndicator');
+            turnIndicator.innerHTML = winnerMessage.replace(/<[^>]*>/g, ''); // Remove HTML tags
+            turnIndicator.className = "turn-indicator";
+            
+            if (gameMode === 'single') {
+                if (computerScore > player1Score) {
+                    turnIndicator.classList.add("computer-turn");
+                }
+            } else {
+                if (player2Score > player1Score) {
+                    turnIndicator.classList.add("player2-turn");
+                }
+            }
+            
+            document.getElementById('gameOverMessage').innerHTML = message;
+            document.getElementById('gameOverModal').style.display = 'flex';
+        }
+        
+        function createConfetti(color = 'blue') {
+            const colors = color === 'blue' ? 
+                ['#4361ee', '#3a0ca3', '#4cc9f0', '#4895ef'] : 
+                ['#4cc9f0', '#3a86ff', '#4361ee', '#4895ef'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 10 + 5 + 'px';
+                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+                document.body.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+        
+        function restart() {
+            var i, j;
+            score = [0, 0, 0];
+            updateScores();
+            player = 1;
+            updateTurnIndicator();
+            
+            // Reset edges
+            for (i = 0; i <= m; i++) {
+                for (j = 0; j < n; j++) {
+                    const edge = document.getElementById(`he${i}${j}`);
+                    if (edge) {
+                        edge.style.backgroundColor = 'transparent';
+                        hedge[i][j] = 0;
+                        // Restore hover events
+                        edge.onmouseover = function() {
+                            if (hedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
+                                const color = player === 1 ? '#4361ee' : '#4cc9f0';
+                                this.style.backgroundColor = color;
+                                this.style.opacity = '0.7';
+                            }
+                        };
+                        edge.onmouseout = function() {
+                            if (hedge[i][j] < 1) {
+                                this.style.backgroundColor = 'transparent';
+                            }
+                        };
+                    }
+                }
+            }
+            
+            for (i = 0; i < m; i++) {
+                for (j = 0; j <= n; j++) {
+                    const edge = document.getElementById(`ve${i}${j}`);
+                    if (edge) {
+                        edge.style.backgroundColor = 'transparent';
+                        vedge[i][j] = 0;
+                        // Restore hover events
+                        edge.onmouseover = function() {
+                            if (vedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
+                                const color = player === 1 ? '#4361ee' : '#4cc9f0';
+                                this.style.backgroundColor = color;
+                                this.style.opacity = '0.7';
+                            }
+                        };
+                        edge.onmouseout = function() {
+                            if (vedge[i][j] < 1) {
+                                this.style.backgroundColor = 'transparent';
+                            }
+                        };
+                    }
+                }
+            }
+            
+            // Reset boxes
+            for (i = 0; i < m; i++) {
+                for (j = 0; j < n; j++) {
+                    const boxEl = document.getElementById(`sq${i}${j}`);
+                    if (boxEl) {
+                        boxEl.innerHTML = '';
+                        box[i][j] = 0;
+                    }
+                }
+            }
+            
+            if (gameMode === 'single' && player != 1) {
+                setTimeout(makemove, 800);
+            }
+        }
+
+        function hmove(i, j) {
+            if (hedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
+                sethedge(i, j);
+                if (score[0] + score[1] + score[2] == m * n) {
+                    showGameOver(score[0], score[1], score[2]);
+                } else if (gameMode === 'single' && player == 0) {
+                    setTimeout(makemove, 800); // Add delay for computer move
+                }
+            }
+        }
+
+        function vmove(i, j) {
+            if (vedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
+                setvedge(i, j);
+                if (score[0] + score[1] + score[2] == m * n) {
+                    showGameOver(score[0], score[1], score[2]);
+                } else if (gameMode === 'single' && player == 0) {
+                    setTimeout(makemove, 800); // Add delay for computer move
+                }
+            }
+        }
+
+        function sethedge(x, y) {
+            hedge[x][y] = 1;
+            const edge = document.getElementById(`he${x}${y}`);
+            if (edge) {
+                if (gameMode === 'single') {
+                    edge.style.backgroundColor = player === 0 ? '#f72585' : '#4361ee';
+                } else {
+                    edge.style.backgroundColor = player === 1 ? '#4361ee' : '#4cc9f0';
+                }
+                edge.style.opacity = '1';
+                edge.onmouseover = null;
+                edge.onmouseout = null;
+            }
+            
+            if (x > 0) box[x - 1][y]++;
+            if (x < m) box[x][y]++;
+            
+            checkh(x, y);
+            if (gameMode === 'single') {
+                player = player === 1 ? 0 : 1;
+            } else {
+                player = player === 1 ? 2 : 1;
+            }
+            updateTurnIndicator();
+        }
+
+        function setvedge(x, y) {
+            vedge[x][y] = 1;
+            const edge = document.getElementById(`ve${x}${y}`);
+            if (edge) {
+                if (gameMode === 'single') {
+                    edge.style.backgroundColor = player === 0 ? '#f72585' : '#4361ee';
+                } else {
+                    edge.style.backgroundColor = player === 1 ? '#4361ee' : '#4cc9f0';
+                }
+                edge.style.opacity = '1';
+                edge.onmouseover = null;
+                edge.onmouseout = null;
+            }
+            
+            if (y > 0) box[x][y - 1]++;
+            if (y < n) box[x][y]++;
+            
+            checkv(x, y);
+            if (gameMode === 'single') {
+                player = player === 1 ? 0 : 1;
+            } else {
+                player = player === 1 ? 2 : 1;
+            }
+            updateTurnIndicator();
+        }
+
+        function takeedge(zz, x, y) {
+            if (zz > 1) setvedge(x, y);
+            else sethedge(x, y);
+        }
+
+        function makemove() {
+            takesafe3s();
+            if (sides3()) {
+                if (sides01()) {
+                    takeall3s();
+                    takeedge(zz, x, y);
+                } else {
+                    sac(u, v)
+                }
+                if (score[0] + score[1] + score[2] == m * n) {
+                    showGameOver(score[0], score[1], score[2]);
+                }
+            } else if (sides01()) takeedge(zz, x, y);
+            else if (singleton()) takeedge(zz, x, y);
+            else if (doubleton()) takeedge(zz, x, y);
+            else makeanymove();
+        }
+
+        function takesafe3s() {
+            for (var i = 0; i < m; i++) {
+                for (var j = 0; j < n; j++) {
+                    if (box[i][j] == 3) {
+                        if (vedge[i][j] < 1) {
+                            if (j == 0 || box[i][j - 1] != 2) setvedge(i, j);
+                        } else if (hedge[i][j] < 1) {
+                            if (i == 0 || box[i - 1][j] != 2) sethedge(i, j);
+                        } else if (vedge[i][j + 1] < 1) {
+                            if (j == n - 1 || box[i][j + 1] != 2) setvedge(i, j + 1);
+                        } else {
+                            if (i == m - 1 || box[i + 1][j] != 2) sethedge(i + 1, j);
+                        }
+                    }
+                }
+            }
+        }
+
+        function sides3() {
+            for (var i = 0; i < m; i++) {
+                for (var j = 0; j < n; j++) {
+                    if (box[i][j] == 3) {
+                        u = i;
+                        v = j;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function takeall3s() {
+            while (sides3()) takebox(u, v);
+        }
+
+        function sides01() {
+            if (Math.random() < .5) zz = 1; else zz = 2;
+            var i = Math.floor(m * Math.random());
+            var j = Math.floor(n * Math.random());
+            if (zz == 1) {
+                if (randhedge(i, j)) return true;
+                else {
+                    zz = 2;
+                    if (randvedge(i, j)) return true;
+                }
+            } else {
+                if (randvedge(i, j)) return true;
+                else {
+                    zz = 1;
+                    if (randhedge(i, j)) return true;
+                }
+            }
+            return false;
+        }
+
+        function safehedge(i, j) {
+            if (hedge[i][j] < 1) {
+                if (i == 0) {
+                    if (box[i][j] < 2) return true
+                } else if (i == m) {
+                    if (box[i - 1][j] < 2) return true
+                }
+                else if (box[i][j] < 2 && box[i - 1][j] < 2) return true;
+            }
+            return false
+        }
+
+        function safevedge(i, j) {
+            if (vedge[i][j] < 1) {
+                if (j == 0) {
+                    if (box[i][j] < 2) return true
+                } else if (j == n) {
+                    if (box[i][j - 1] < 2) return true
+                }
+                else if (box[i][j] < 2 && box[i][j - 1] < 2) return true;
+            }
+            return false
+        }
+
+        function randhedge(i, j) {
+            x = i;
+            y = j;
+            do {
+                if (safehedge(x, y)) return true;
+                else {
+                    y++;
+                    if (y == n) {
+                        y = 0;
+                        x++;
+                        if (x > m) x = 0;
+                    }
+                }
+            } while (x != i || y != j);
+            return false
+        }
+
+        function randvedge(i, j) {
+            x = i;
+            y = j;
+            do {
+                if (safevedge(x, y)) return true;
+                else {
+                    y++;
+                    if (y > n) {
+                        y = 0;
+                        x++;
+                        if (x == m) x = 0;
+                    }
+                }
+            } while (x != i || y != j);
+            return false
+        }
+
+        function singleton() {
+            var numb;
+            for (var i = 0; i < m; i++) {
+                for (var j = 0; j < n; j++) {
+                    if (box[i][j] == 2) {
+                        numb = 0;
+                        if (hedge[i][j] < 1) {
+                            if (i < 1 || box[i - 1][j] < 2) numb++;
+                        }
+                        zz = 2;
+                        if (vedge[i][j] < 1) {
+                            if (j < 1 || box[i][j - 1] < 2) numb++;
+                            if (numb > 1) {
+                                x = i;
+                                y = j;
+                                return true;
+                            }
+                        }
+                        if (vedge[i][j + 1] < 1) {
+                            if (j + 1 == n || box[i][j + 1] < 2) numb++;
+                            if (numb > 1) {
+                                x = i;
+                                y = j + 1;
+                                return true;
+                            }
+                        }
+                        zz = 1;
+                        if (hedge[i + 1][j] < 1) {
+                            if (i + 1 == m || box[i + 1][j] < 2) numb++;
+                            if (numb > 1) {
+                                x = i + 1;
+                                y = j;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function doubleton() {
+            zz = 2;
+            for (i = 0; i < m; i++) {
+                for (j = 0; j < n - 1; j++) {
+                    if (box[i][j] == 2 && box[i][j + 1] == 2 && vedge[i][j + 1] < 1) {
+                        if (ldub(i, j) && rdub(i, j + 1)) {
+                            x = i;
+                            y = j + 1;
+                            return true;
+                        }
+                    }
+                }
+            }
+            zz = 1;
+            for (j = 0; j < n; j++) {
+                for (i = 0; i < m - 1; i++) {
+                    if (box[i][j] == 2 && box[i + 1][j] == 2 && hedge[i + 1][j] < 1) {
+                        if (udub(i, j) && ddub(i + 1, j)) {
+                            x = i + 1;
+                            y = j;
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false
+        }
+
+        function ldub(i, j) {
+            if (vedge[i][j] < 1) {
+                if (j < 1 || box[i][j - 1] < 2) return true;
+            } else if (hedge[i][j] < 1) {
+                if (i < 1 || box[i - 1][j] < 2) return true;
+            } else if (i == m - 1 || box[i + 1][j] < 2) {
+                return true
+            }
+            return false
+        }
+
+        function rdub(i, j) {
+            if (vedge[i][j + 1] < 1) {
+                if (j + 1 == n || box[i][j + 1] < 2) return true;
+            } else if (hedge[i][j] < 1) {
+                if (i < 1 || box[i - 1][j] < 2) return true;
+            } else if (i + 1 == m || box[i + 1][j] < 2) {
+                return true
+            }
+            return false
+        }
+
+        function udub(i, j) {
+            if (hedge[i][j] < 1) {
+                if (i < 1 || box[i - 1][j] < 2) return true;
+            } else if (vedge[i][j] < 1) {
+                if (j < 1 || box[i][j - 1] < 2) return true;
+            } else if (j == n - 1 || box[i][j + 1] < 2) {
+                return true
+            }
+            return false
+        }
+
+        function ddub(i, j) {
+            if (hedge[i + 1][j] < 1) {
+                if (i == m - 1 || box[i + 1][j] < 2) return true;
+            } else if (vedge[i][j] < 1) {
+                if (j < 1 || box[i][j - 1] < 2) return true;
+            } else if (j == n - 1 || box[i][j + 1] < 2) {
+                return true
+            }
+            return false
+        }
+
+        function sac(i, j) {
+            count = 0;
+            loop = false;
+            incount(0, i, j);
+            if (!loop) takeallbut(i, j);
+            if (count + score[0] + score[1] + score[2] == m * n) {
+                takeall3s()
+            } else {
+                if (loop) {
+                    count = count - 2;
+                }
+                outcount(0, i, j);
+                i = m;
+                j = n
+            }
+        }
+
+        function incount(k, i, j) {
+            count++;
+            if (k != 1 && vedge[i][j] < 1) {
+                if (j > 0) {
+                    if (box[i][j - 1] > 2) {
+                        count++;
+                        loop = true;
+                    } else if (box[i][j - 1] > 1) incount(3, i, j - 1);
+                }
+            } else if (k != 2 && hedge[i][j] < 1) {
+                if (i > 0) {
+                    if (box[i - 1][j] > 2) {
+                        count++;
+                        loop = true
+                    } else if (box[i - 1][j] > 1) incount(4, i - 1, j);
+                }
+            } else if (k != 3 && vedge[i][j + 1] < 1) {
+                if (j < n - 1) {
+                    if (box[i][j + 1] > 2) {
+                        count++;
+                        loop = true
+                    } else if (box[i][j + 1] > 1) incount(1, i, j + 1);
+                }
+            } else if (k != 4 && hedge[i + 1][j] < 1) {
+                if (i < m - 1) {
+                    if (box[i + 1][j] > 2) {
+                        count++;
+                        loop = true
+                    } else if (box[i + 1][j] > 1) incount(2, i + 1, j);
+                }
+            }
+        }
+
+        function takeallbut(x, y) {
+            while (sides3not(x, y)) {
+                takebox(u, v);
+            }
+        }
+
+        function sides3not(x, y) {
+            for (var i = 0; i < m; i++) {
+                for (var j = 0; j < n; j++) {
+                    if (box[i][j] == 3) {
+                        if (i != x || j != y) {
+                            u = i;
+                            v = j;
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false
+        }
+
+        function takebox(i, j) {
+            if (hedge[i][j] < 1) sethedge(i, j);
+            else if (vedge[i][j] < 1) setvedge(i, j);
+            else if (hedge[i + 1][j] < 1) sethedge(i + 1, j);
+            else setvedge(i, j + 1);
+        }
+
+        function outcount(k, i, j) {
+            if (count > 0) {
+                if (k != 1 && vedge[i][j] < 1) {
+                    if (count != 2) setvedge(i, j);
+                    count--;
+                    outcount(3, i, j - 1)
+                } else if (k != 2 && hedge[i][j] < 1) {
+                    if (count != 2) sethedge(i, j);
+                    count--;
+                    outcount(4, i - 1, j)
+                } else if (k != 3 && vedge[i][j + 1] < 1) {
+                    if (count != 2) setvedge(i, j + 1);
+                    count--;
+                    outcount(1, i, j + 1)
+                } else if (k != 4 && hedge[i + 1][j] < 1) {
+                    if (count != 2) sethedge(i + 1, j);
+                    count--;
+                    outcount(2, i + 1, j)
+                }
+            }
+        }
+
+        function makeanymove() {
+            x = -1;
+            for (i = 0; i <= m; i++) {
+                for (j = 0; j < n; j++) {
+                    if (hedge[i][j] < 1) {
+                        x = i;
+                        y = j;
+                        i = m + 1;
+                        j = n
+                    }
+                }
+            }
+            if (x < 0) {
+                for (i = 0; i < m; i++) {
+                    for (j = 0; j <= n; j++) {
+                        if (vedge[i][j] < 1) {
+                            x = i;
+                            y = j;
+                            i = m;
+                            j = n + 1;
+                        }
+                    }
+                }
+                setvedge(x, y);
+            } else {
+                sethedge(x, y);
+            }
+            if (gameMode === 'single' && player == 0) setTimeout(makemove, 800);
+        }
+
+        function checkh(x, y) {
+            var hit = 0;
+            if (x > 0) {
+                if (box[x - 1][y] == 4) {
+                    const boxEl = document.getElementById(`sq${x-1}${y}`);
+                    if (boxEl) {
+                        const playerClass = gameMode === 'single' ? 
+                            (player === 0 ? 'computer' : 'player1') : 
+                            (player === 1 ? 'player1' : 'player2');
+                        boxEl.innerHTML = `<div class="box-filled ${playerClass}"></div>`;
+                        boxEl.style.animation = 'pulse 0.5s';
+                        setTimeout(() => {
+                            boxEl.style.animation = '';
+                        }, 500);
+                    }
+                    if (gameMode === 'single') {
+                        score[player === 0 ? 0 : 1]++;
+                    } else {
+                        score[player === 1 ? 1 : 2]++;
+                    }
+                    updateScores();
+                    hit = 1;
+                }
+            }
+            if (x < m) {
+                if (box[x][y] == 4) {
+                    const boxEl = document.getElementById(`sq${x}${y}`);
+                    if (boxEl) {
+                        const playerClass = gameMode === 'single' ? 
+                            (player === 0 ? 'computer' : 'player1') : 
+                            (player === 1 ? 'player1' : 'player2');
+                        boxEl.innerHTML = `<div class="box-filled ${playerClass}"></div>`;
+                        boxEl.style.animation = 'pulse 0.5s';
+                        setTimeout(() => {
+                            boxEl.style.animation = '';
+                        }, 500);
+                    }
+                    if (gameMode === 'single') {
+                        score[player === 0 ? 0 : 1]++;
+                    } else {
+                        score[player === 1 ? 1 : 2]++;
+                    }
+                    updateScores();
+                    hit = 1;
+                }
+            }
+            
+            // Check if all boxes are claimed after scoring
+            if (score[0] + score[1] + score[2] === m * n) {
+                showGameOver(score[0], score[1], score[2]);
+                return;
+            }
+            
+            if (hit > 0) {
+                if (gameMode === 'single') {
+                    player = player === 0 ? 1 : 0;
+                } else {
+                    player = player === 1 ? 2 : 1;
+                }
+                updateTurnIndicator();
+            }
+        }
+
+        function checkv(x, y) {
+            var hit = 0;
+            if (y > 0) {
+                if (box[x][y - 1] == 4) {
+                    const boxEl = document.getElementById(`sq${x}${y-1}`);
+                    if (boxEl) {
+                        const playerClass = gameMode === 'single' ? 
+                            (player === 0 ? 'computer' : 'player1') : 
+                            (player === 1 ? 'player1' : 'player2');
+                        boxEl.innerHTML = `<div class="box-filled ${playerClass}"></div>`;
+                        boxEl.style.animation = 'pulse 0.5s';
+                        setTimeout(() => {
+                            boxEl.style.animation = '';
+                        }, 500);
+                    }
+                    if (gameMode === 'single') {
+                        score[player === 0 ? 0 : 1]++;
+                    } else {
+                        score[player === 1 ? 1 : 2]++;
+                    }
+                    updateScores();
+                    hit = 1;
+                }
+            }
+            if (y < n) {
+                if (box[x][y] == 4) {
+                    const boxEl = document.getElementById(`sq${x}${y}`);
+                    if (boxEl) {
+                        const playerClass = gameMode === 'single' ? 
+                            (player === 0 ? 'computer' : 'player1') : 
+                            (player === 1 ? 'player1' : 'player2');
+                        boxEl.innerHTML = `<div class="box-filled ${playerClass}"></div>`;
+                        boxEl.style.animation = 'pulse 0.5s';
+                        setTimeout(() => {
+                            boxEl.style.animation = '';
+                        }, 500);
+                    }
+                    if (gameMode === 'single') {
+                        score[player === 0 ? 0 : 1]++;
+                    } else {
+                        score[player === 1 ? 1 : 2]++;
+                    }
+                    updateScores();
+                    hit = 1;
+                }
+            }
+            
+            // Check if all boxes are claimed after scoring
+            if (score[0] + score[1] + score[2] === m * n) {
+                showGameOver(score[0], score[1], score[2]);
+                return;
+            }
+            
+            if (hit > 0) {
+                if (gameMode === 'single') {
+                    player = player === 0 ? 1 : 0;
+                } else {
+                    player = player === 1 ? 2 : 1;
+                }
+                updateTurnIndicator();
+            }
+        }
+        // Initialize the game when page loads
+        window.onload = function() {
+            // Default to 5x5 grid
+            document.getElementById('rowsInput').value = 3;
+            document.getElementById('colsInput').value = 3;
+            setGameMode('single');
+        };
+    </script>
+</body>
+</html>
