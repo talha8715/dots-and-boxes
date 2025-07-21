@@ -461,8 +461,25 @@ body {
     height: 10px;
     background-color: var(--primary);
     opacity: 0;
-    z-index: 999;
+    bottom: 0;
+    z-index: 1001;
     animation: confettiFall 5s ease-in-out;
+}
+
+.confetti.square {
+    border-radius: 3px;
+}
+
+.confetti.star {
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    width: 20px;
+    height: 20px;
+}
+
+.confetti.heart {
+    clip-path: path('M10 6 Q10 0 15 0 T20 6 Q20 10 10 16 Q0 10 0 6 Q0 0 5 0 T10 6');
+    width: 18px;
+    height: 18px;
 }
 
 @keyframes confettiFall {
