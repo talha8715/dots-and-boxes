@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Play Dots and Boxes online - a classic strategy game where players connect dots to complete boxes. Play against the computer or with a friend!">
+    <meta name="description"
+        content="Play Dots and Boxes online - a classic strategy game where players connect dots to complete boxes. Play against the computer or with a friend!">
     <meta name="keywords" content="dots and boxes, strategy game, connect the dots, online game, puzzle game">
     <meta name="author" content="Talha Javaid">
-    
+
     <!-- Open Graph / Social Media Meta Tags -->
     <meta property="og:title" content="Dots and Boxes - Online Game">
-    <meta property="og:description" content="Play the classic Dots and Boxes game online against the computer or with a friend!">
+    <meta property="og:description"
+        content="Play the classic Dots and Boxes game online against the computer or with a friend!">
     <meta property="og:type" content="website">
     <!-- <meta property="og:image" content="https://yourdomain.com/images/social-preview.jpg"> -->
     <!-- <meta property="og:url" content="https://yourdomain.com"> -->
-    
+
     <title>Dots and Boxes - Classic Strategy Game</title>
-    
+
     <!-- Favicon Links -->
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
@@ -30,20 +33,21 @@
     <!-- iOS Support -->
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    
+
     <!-- Fonts and Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    
+
     <!-- CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
     <div class="container">
         <header class="game-header">
             <h1 class="game-title">Dots and Boxes</h1>
             <p class="game-subtitle">A classic strategy game for 1-2 players</p>
-            
+
             <div class="mode-selector" id="modeSelector">
                 <button class="btn btn-primary mode-btn active" onclick="setGameMode('single')">
                     <i class="fas fa-robot"></i> Single Player
@@ -52,7 +56,7 @@
                     <i class="fas fa-users"></i> Multiplayer
                 </button>
             </div>
-            
+
             <div class="game-controls">
                 <button class="btn btn-primary" onclick="newGame()">
                     <i class="fas fa-plus-circle"></i> New Game
@@ -61,7 +65,7 @@
                     <i class="fas fa-redo"></i> Restart
                 </button>
             </div>
-            
+
             <div class="score-display" id="scoreDisplay">
                 <div class="score score-computer">
                     <span class="score-badge"></span>
@@ -76,16 +80,16 @@
                     <span>Player 2: <span id="greenScore">0</span></span>
                 </div>
             </div>
-            
+
             <div id="turnIndicator" class="turn-indicator">
                 Player 1's turn - Click on a line to make your move
             </div>
         </header>
-        
+
         <div class="game-board-container">
             <div id="gameBoard"></div>
         </div>
-        
+
         <div class="game-info">
             <h3><i class="fas fa-info-circle"></i> How to Play</h3>
             <ol>
@@ -94,10 +98,11 @@
                 <li>The game ends when all boxes are claimed</li>
                 <li>The player with the most boxes wins</li>
             </ol>
-            <p><strong>Player 1 is blue</strong>, <strong>Player 2 is teal</strong>, and the <strong>computer is red</strong></p>
+            <p><strong>Player 1 is blue</strong>, <strong>Player 2 is teal</strong>, and the <strong>computer is
+                    red</strong></p>
         </div>
     </div>
-    
+
     <!-- Game Over Modal -->
     <div id="gameOverModal" class="modal">
         <div class="modal-content">
@@ -117,7 +122,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Setup Modal -->
     <div id="setupModal" class="modal" style="display:flex;">
         <div class="modal-content">
@@ -151,12 +156,12 @@
         var n1 = new Image();
         var n2 = new Image();
         var n3 = new Image();
-        
+
         n0.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='%23f72585'/%3E%3C/svg%3E";
         n1.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='%234361ee'/%3E%3C/svg%3E";
         n2.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='%23212529'/%3E%3C/svg%3E";
         n3.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Crect width='8' height='8' fill='transparent'/%3E%3C/svg%3E";
-        
+
         var flag = [n0.src, n1.src];
         var player = 1; // 1 is player1, 2 is player2/computer
         var score = [0, 0, 0]; // [computer, player1, player2]
@@ -170,7 +175,7 @@
             const singleBtn = document.querySelector('.mode-btn:nth-child(1)');
             const multiBtn = document.querySelector('.mode-btn:nth-child(2)');
             const player1Label = document.getElementById('player1Label');
-            
+
             if (mode === 'single') {
                 singleBtn.classList.add('active');
                 multiBtn.classList.remove('active');
@@ -184,7 +189,7 @@
                 document.querySelector('.score-computer').style.display = 'none';
                 player1Label.innerHTML = 'Player 1: <span id="blueScore">0</span>';
             }
-            
+
             // Reset game if already playing
             if (document.getElementById('gameBoard').innerHTML) {
                 restart();
@@ -196,32 +201,32 @@
             document.getElementById('gameOverModal').style.display = 'none';
             updateTurnIndicator();
         }
-        
+
         function handleSetup() {
             m = parseInt(document.getElementById('rowsInput').value);
             n = parseInt(document.getElementById('colsInput').value);
-            
+
             if (m < 3 || m > 10 || n < 3 || n > 10) {
                 alert("Please enter values between 3 and 10");
                 return;
             }
-            
+
             document.getElementById('setupModal').style.display = 'none';
             initializeGame();
         }
-        
+
         function initializeGame() {
             // Reset scores
             score = [0, 0, 0];
             updateScores();
             player = 1;
             updateTurnIndicator();
-            
+
             // Initialize arrays
             hedge = [];
             vedge = [];
             box = [];
-            
+
             for (var i = 0; i <= m; i++) {
                 hedge[i] = [];
                 for (var j = 0; j < n; j++) hedge[i][j] = 0;
@@ -235,10 +240,10 @@
                 for (j = 0; j < n; j++) box[i][j] = 0;
             }
             nn = 2 * n + 1;
-            
+
             // Generate the game board
             var gameBoardHTML = '<table class="game-board"><tr>';
-            
+
             for (i = 0; i < m; i++) {
                 // Top dots and horizontal edges row
                 for (j = 0; j < n; j++) {
@@ -246,7 +251,7 @@
                     gameBoardHTML += `<td><div class="horizontal-edge" onclick="hmove(${i},${j})" id="he${i}${j}"></div></td>`;
                 }
                 gameBoardHTML += '<td><div class="dot"></div></td></tr><tr>';
-                
+
                 // Vertical edges and boxes row
                 for (j = 0; j < n; j++) {
                     gameBoardHTML += `<td><div class="vertical-edge" onclick="vmove(${i},${j})" id="ve${i}${j}"></div></td>`;
@@ -254,7 +259,7 @@
                 }
                 gameBoardHTML += `<td><div class="vertical-edge" onclick="vmove(${i},${j})" id="ve${i}${j}"></div></td></tr>`;
             }
-            
+
             // Bottom dots and horizontal edges row
             gameBoardHTML += '<tr>';
             for (j = 0; j < n; j++) {
@@ -263,27 +268,27 @@
             }
             gameBoardHTML += '<td><div class="dot"></div></td></tr>';
             gameBoardHTML += '</table>';
-            
+
             document.getElementById('gameBoard').innerHTML = gameBoardHTML;
-            
+
             // Add hover effects for edges
             setupEdgeHoverEffects();
         }
-        
+
         function setupEdgeHoverEffects() {
             // Horizontal edges
             for (let i = 0; i <= m; i++) {
                 for (let j = 0; j < n; j++) {
                     const edge = document.getElementById(`he${i}${j}`);
                     if (edge) {
-                        edge.onmouseover = function() {
+                        edge.onmouseover = function () {
                             if (hedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
                                 const color = player === 1 ? '#4361ee' : '#4cc9f0';
                                 this.style.backgroundColor = color;
                                 this.style.opacity = '0.7';
                             }
                         };
-                        edge.onmouseout = function() {
+                        edge.onmouseout = function () {
                             if (hedge[i][j] < 1) {
                                 this.style.backgroundColor = 'transparent';
                             }
@@ -291,20 +296,20 @@
                     }
                 }
             }
-            
+
             // Vertical edges
             for (let i = 0; i < m; i++) {
                 for (let j = 0; j <= n; j++) {
                     const edge = document.getElementById(`ve${i}${j}`);
                     if (edge) {
-                        edge.onmouseover = function() {
+                        edge.onmouseover = function () {
                             if (vedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
                                 const color = player === 1 ? '#4361ee' : '#4cc9f0';
                                 this.style.backgroundColor = color;
                                 this.style.opacity = '0.7';
                             }
                         };
-                        edge.onmouseout = function() {
+                        edge.onmouseout = function () {
                             if (vedge[i][j] < 1) {
                                 this.style.backgroundColor = 'transparent';
                             }
@@ -313,13 +318,13 @@
                 }
             }
         }
-        
+
         function updateScores() {
             document.getElementById('redScore').textContent = score[0];
             document.getElementById('blueScore').textContent = score[1];
             document.getElementById('greenScore').textContent = score[2];
         }
-        
+
         function updateTurnIndicator() {
             const indicator = document.getElementById('turnIndicator');
             if (gameMode === 'single') {
@@ -340,11 +345,11 @@
                 }
             }
         }
-        
+
         function showGameOver(computerScore, player1Score, player2Score) {
             var message = "<div style='text-align:center;'>";
             message += `<p style='font-size:1.2rem; margin-bottom:1rem;'>Final Score:</p>`;
-            
+
             if (gameMode === 'single') {
                 message += `<p style='color:#f72585; font-weight:600;'>Computer: ${computerScore}</p>`;
                 message += `<p style='color:#4361ee; font-weight:600; margin-bottom:1.5rem;'>You: ${player1Score}</p>`;
@@ -352,7 +357,7 @@
                 message += `<p style='color:#4361ee; font-weight:600;'>Player 1: ${player1Score}</p>`;
                 message += `<p style='color:#4cc9f0; font-weight:600; margin-bottom:1.5rem;'>Player 2: ${player2Score}</p>`;
             }
-            
+
             let winnerMessage = "";
             if (gameMode === 'single') {
                 if (computerScore > player1Score) {
@@ -374,15 +379,15 @@
                     winnerMessage = `<h3 style='color:#6c757d; margin-bottom:1rem;'>It's a tie!</h3>`;
                 }
             }
-            
+
             message += winnerMessage;
             message += "</div>";
-            
+
             // Update the turn indicator with final message
             const turnIndicator = document.getElementById('turnIndicator');
             turnIndicator.innerHTML = winnerMessage.replace(/<[^>]*>/g, ''); // Remove HTML tags
             turnIndicator.className = "turn-indicator";
-            
+
             if (gameMode === 'single') {
                 if (computerScore > player1Score) {
                     turnIndicator.classList.add("computer-turn");
@@ -392,11 +397,11 @@
                     turnIndicator.classList.add("player2-turn");
                 }
             }
-            
+
             document.getElementById('gameOverMessage').innerHTML = message;
             document.getElementById('gameOverModal').style.display = 'flex';
         }
-        
+
         function createConfetti(color = 'any') {
             let colors = [];
             if (color === 'blue') {
@@ -416,7 +421,7 @@
                 confetti.style.height = Math.random() * 10 + 5 + 'px';
                 confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
                 document.body.appendChild(confetti);
-                
+
                 // Remove confetti after animation
                 setTimeout(() => {
                     confetti.remove();
@@ -430,7 +435,7 @@
             updateScores();
             player = 1;
             updateTurnIndicator();
-            
+
             // Reset edges
             for (i = 0; i <= m; i++) {
                 for (j = 0; j < n; j++) {
@@ -439,14 +444,14 @@
                         edge.style.backgroundColor = 'transparent';
                         hedge[i][j] = 0;
                         // Restore hover events
-                        edge.onmouseover = function() {
+                        edge.onmouseover = function () {
                             if (hedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
                                 const color = player === 1 ? '#4361ee' : '#4cc9f0';
                                 this.style.backgroundColor = color;
                                 this.style.opacity = '0.7';
                             }
                         };
-                        edge.onmouseout = function() {
+                        edge.onmouseout = function () {
                             if (hedge[i][j] < 1) {
                                 this.style.backgroundColor = 'transparent';
                             }
@@ -454,7 +459,7 @@
                     }
                 }
             }
-            
+
             for (i = 0; i < m; i++) {
                 for (j = 0; j <= n; j++) {
                     const edge = document.getElementById(`ve${i}${j}`);
@@ -462,14 +467,14 @@
                         edge.style.backgroundColor = 'transparent';
                         vedge[i][j] = 0;
                         // Restore hover events
-                        edge.onmouseover = function() {
+                        edge.onmouseover = function () {
                             if (vedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
                                 const color = player === 1 ? '#4361ee' : '#4cc9f0';
                                 this.style.backgroundColor = color;
                                 this.style.opacity = '0.7';
                             }
                         };
-                        edge.onmouseout = function() {
+                        edge.onmouseout = function () {
                             if (vedge[i][j] < 1) {
                                 this.style.backgroundColor = 'transparent';
                             }
@@ -477,7 +482,7 @@
                     }
                 }
             }
-            
+
             // Reset boxes
             for (i = 0; i < m; i++) {
                 for (j = 0; j < n; j++) {
@@ -488,7 +493,7 @@
                     }
                 }
             }
-            
+
             if (gameMode === 'single' && player != 1) {
                 setTimeout(makemove, 800);
             }
@@ -529,10 +534,10 @@
                 edge.onmouseover = null;
                 edge.onmouseout = null;
             }
-            
+
             if (x > 0) box[x - 1][y]++;
             if (x < m) box[x][y]++;
-            
+
             checkh(x, y);
             if (gameMode === 'single') {
                 player = player === 1 ? 0 : 1;
@@ -555,10 +560,10 @@
                 edge.onmouseover = null;
                 edge.onmouseout = null;
             }
-            
+
             if (y > 0) box[x][y - 1]++;
             if (y < n) box[x][y]++;
-            
+
             checkv(x, y);
             if (gameMode === 'single') {
                 player = player === 1 ? 0 : 1;
@@ -951,10 +956,10 @@
             var hit = 0;
             if (x > 0) {
                 if (box[x - 1][y] == 4) {
-                    const boxEl = document.getElementById(`sq${x-1}${y}`);
+                    const boxEl = document.getElementById(`sq${x - 1}${y}`);
                     if (boxEl) {
-                        const playerClass = gameMode === 'single' ? 
-                            (player === 0 ? 'computer' : 'player1') : 
+                        const playerClass = gameMode === 'single' ?
+                            (player === 0 ? 'computer' : 'player1') :
                             (player === 1 ? 'player1' : 'player2');
                         boxEl.innerHTML = `<div class="box-filled ${playerClass}"></div>`;
                         boxEl.style.animation = 'pulse 0.5s';
@@ -975,8 +980,8 @@
                 if (box[x][y] == 4) {
                     const boxEl = document.getElementById(`sq${x}${y}`);
                     if (boxEl) {
-                        const playerClass = gameMode === 'single' ? 
-                            (player === 0 ? 'computer' : 'player1') : 
+                        const playerClass = gameMode === 'single' ?
+                            (player === 0 ? 'computer' : 'player1') :
                             (player === 1 ? 'player1' : 'player2');
                         boxEl.innerHTML = `<div class="box-filled ${playerClass}"></div>`;
                         boxEl.style.animation = 'pulse 0.5s';
@@ -993,13 +998,13 @@
                     hit = 1;
                 }
             }
-            
+
             // Check if all boxes are claimed after scoring
             if (score[0] + score[1] + score[2] === m * n) {
                 showGameOver(score[0], score[1], score[2]);
                 return;
             }
-            
+
             if (hit > 0) {
                 if (gameMode === 'single') {
                     player = player === 0 ? 1 : 0;
@@ -1014,10 +1019,10 @@
             var hit = 0;
             if (y > 0) {
                 if (box[x][y - 1] == 4) {
-                    const boxEl = document.getElementById(`sq${x}${y-1}`);
+                    const boxEl = document.getElementById(`sq${x}${y - 1}`);
                     if (boxEl) {
-                        const playerClass = gameMode === 'single' ? 
-                            (player === 0 ? 'computer' : 'player1') : 
+                        const playerClass = gameMode === 'single' ?
+                            (player === 0 ? 'computer' : 'player1') :
                             (player === 1 ? 'player1' : 'player2');
                         boxEl.innerHTML = `<div class="box-filled ${playerClass}"></div>`;
                         boxEl.style.animation = 'pulse 0.5s';
@@ -1038,8 +1043,8 @@
                 if (box[x][y] == 4) {
                     const boxEl = document.getElementById(`sq${x}${y}`);
                     if (boxEl) {
-                        const playerClass = gameMode === 'single' ? 
-                            (player === 0 ? 'computer' : 'player1') : 
+                        const playerClass = gameMode === 'single' ?
+                            (player === 0 ? 'computer' : 'player1') :
                             (player === 1 ? 'player1' : 'player2');
                         boxEl.innerHTML = `<div class="box-filled ${playerClass}"></div>`;
                         boxEl.style.animation = 'pulse 0.5s';
@@ -1056,13 +1061,13 @@
                     hit = 1;
                 }
             }
-            
+
             // Check if all boxes are claimed after scoring
             if (score[0] + score[1] + score[2] === m * n) {
                 showGameOver(score[0], score[1], score[2]);
                 return;
             }
-            
+
             if (hit > 0) {
                 if (gameMode === 'single') {
                     player = player === 0 ? 1 : 0;
@@ -1073,13 +1078,21 @@
             }
         }
         // Initialize the game when page loads
-        window.onload = function() {
+        window.onload = function () {
             // Default to 5x5 grid
             document.getElementById('rowsInput').value = 3;
             document.getElementById('colsInput').value = 3;
             setGameMode('single');
         };
     </script>
+    <script>
+        // Handle deep linking for installed PWA
+        if (window.location.pathname !== '/index.html' &&
+            !window.location.pathname.endsWith('/')) {
+            window.history.replaceState(null, null, '/index.html');
+        }
+    </script>
     <script type="module" src="js/install.js"></script>
-</body> 
+</body>
+
 </html>
