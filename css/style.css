@@ -493,3 +493,21 @@ body {
         opacity: 0;
     }
 }
+
+/* Install Button Styles */
+#installBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    animation: pulse 2s infinite;
+  }
+  
+  @media (max-width: 768px) {
+    #installBtn {
+      bottom: 10px;
+      right: 10px;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+    }
+  }
