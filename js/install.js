@@ -42,10 +42,9 @@ function showInstallPrompt() {
 }
 
 window.addEventListener('appinstalled', () => {
-    if (window.location.href.includes('index.html')) {
-      window.location.href = '/';
-    }
-  });
+    const installBtn = document.getElementById('installBtn');
+    if (installBtn) installBtn.remove();
+});
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

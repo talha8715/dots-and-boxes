@@ -14,10 +14,12 @@
     <meta property="og:description"
         content="Play the classic Dots and Boxes game online against the computer or with a friend!">
     <meta property="og:type" content="website">
-    <!-- <meta property="og:image" content="https://yourdomain.com/images/social-preview.jpg"> -->
+    <meta property="og:image" content="https://talha8715.github.io/dots-and-boxes/favicon/favicon-32x32.png">
+    <meta property="og:image:alt" content="Dots and Boxes - A classic strategy game">
     <!-- <meta property="og:url" content="https://yourdomain.com"> -->
 
     <title>Dots and Boxes - Classic Strategy Game</title>
+    <link rel="icon" href="favicon/favicon.ico" type="image/x-icon">
 
     <!-- Favicon Links -->
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
@@ -69,7 +71,7 @@
             <div class="score-display" id="scoreDisplay">
                 <div class="score score-computer">
                     <span class="score-badge"></span>
-                    <span>Computer: <span id="redScore">0</span></span>
+                    <span>Computer: <span id="pinkScore">0</span></span>
                 </div>
                 <div class="score score-player1">
                     <span class="score-badge"></span>
@@ -77,7 +79,7 @@
                 </div>
                 <div class="score score-player2" style="display:none;">
                     <span class="score-badge"></span>
-                    <span>Player 2: <span id="greenScore">0</span></span>
+                    <span>Player 2: <span id="orangeScore">0</span></span>
                 </div>
             </div>
 
@@ -98,8 +100,8 @@
                 <li>The game ends when all boxes are claimed</li>
                 <li>The player with the most boxes wins</li>
             </ol>
-            <p><strong>Player 1 is blue</strong>, <strong>Player 2 is teal</strong>, and the <strong>computer is
-                    red</strong></p>
+            <p><strong>Player 1 is blue</strong>, <strong>Player 2 is orange</strong>, and the <strong>computer is
+                    pink</strong></p>
         </div>
     </div>
 
@@ -283,7 +285,7 @@
                     if (edge) {
                         edge.onmouseover = function () {
                             if (hedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
-                                const color = player === 1 ? '#4361ee' : '#4cc9f0';
+                                const color = player === 1 ? '#4361ee' : '#ffa500';
                                 this.style.backgroundColor = color;
                                 this.style.opacity = '0.7';
                             }
@@ -304,7 +306,7 @@
                     if (edge) {
                         edge.onmouseover = function () {
                             if (vedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
-                                const color = player === 1 ? '#4361ee' : '#4cc9f0';
+                                const color = player === 1 ? '#4361ee' : '#ffa500';
                                 this.style.backgroundColor = color;
                                 this.style.opacity = '0.7';
                             }
@@ -320,16 +322,16 @@
         }
 
         function updateScores() {
-            document.getElementById('redScore').textContent = score[0];
+            document.getElementById('pinkScore').textContent = score[0];
             document.getElementById('blueScore').textContent = score[1];
-            document.getElementById('greenScore').textContent = score[2];
+            document.getElementById('orangeScore').textContent = score[2];
         }
 
         function updateTurnIndicator() {
             const indicator = document.getElementById('turnIndicator');
             if (gameMode === 'single') {
                 if (player === 1) {
-                    indicator.textContent = "Your turn - Click on a line to make your move";
+                    indicator.textContent = "Your turn - Click on a line";
                     indicator.className = "turn-indicator";
                 } else {
                     indicator.textContent = "Computer's turn - Thinking...";
@@ -340,7 +342,7 @@
                     indicator.textContent = "Player 1's turn (Blue) - Click on a line";
                     indicator.className = "turn-indicator";
                 } else {
-                    indicator.textContent = "Player 2's turn (Teal) - Click on a line";
+                    indicator.textContent = "Player 2's turn (Orange) - Click on a line";
                     indicator.className = "turn-indicator player2-turn";
                 }
             }
@@ -355,7 +357,7 @@
                 message += `<p style='color:#4361ee; font-weight:600; margin-bottom:1.5rem;'>You: ${player1Score}</p>`;
             } else {
                 message += `<p style='color:#4361ee; font-weight:600;'>Player 1: ${player1Score}</p>`;
-                message += `<p style='color:#4cc9f0; font-weight:600; margin-bottom:1.5rem;'>Player 2: ${player2Score}</p>`;
+                message += `<p style='color:#ffa500; font-weight:600; margin-bottom:1.5rem;'>Player 2: ${player2Score}</p>`;
             }
 
             let winnerMessage = "";
@@ -373,8 +375,8 @@
                     winnerMessage = `<h3 style='color:#4361ee; margin-bottom:1rem;'>Player 1 wins!</h3>`;
                     createConfetti('blue');
                 } else if (player2Score > player1Score) {
-                    winnerMessage = `<h3 style='color:#4cc9f0; margin-bottom:1rem;'>Player 2 wins!</h3>`;
-                    createConfetti('teal');
+                    winnerMessage = `<h3 style='color:#ffa500; margin-bottom:1rem;'>Player 2 wins!</h3>`;
+                    createConfetti('orange');
                 } else {
                     winnerMessage = `<h3 style='color:#6c757d; margin-bottom:1rem;'>It's a tie!</h3>`;
                 }
@@ -405,9 +407,9 @@
         function createConfetti(color = 'any') {
             let colors = [];
             if (color === 'blue') {
-                colors = ['#4361ee', '#3a0ca3', '#4cc9f0', '#4895ef', '#7209b7', '#3f37c9', '#560bad', '#480ca8'];
-            } else if (color === 'teal') {
-                colors = ['#4cc9f0', '#3a86ff', '#4361ee', '#4895ef', '#38b6ff', '#00b4d8', '#0096c7', '#0077b6'];
+                colors = ['#4361ee', '#3a0ca3', '#4cc9f0', '#4895ef', '#7209b7', '#3f37c9', '#560bad', '#480ca8', '#3a86ff', '#4361ee', '#4895ef', '#38b6ff', '#00b4d8', '#0096c7', '#0077b6'];
+            } else if (color === 'orange') {
+                colors = ['#ffd700', '#ffc000', '#ffdf00', '#f4d03f', '#f1c40f', '#f39c12', '#e67e22', '#d4af37'];
             } else {
                 colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#9400D3', '#FF1493', '#FFD1DC', '#FFECB8', '#B5EAD7', '#C7CEEA', '#E2F0CB', '#FFDAC1', '#B5EAD7', '#FDDFDF', '#FF10F0', '#00FFAA', '#FF0A0A', '#00F0FF', '#F0FF00', '#FF00FF', '#00FF00', '#FF8000'];
             }
@@ -446,7 +448,7 @@
                         // Restore hover events
                         edge.onmouseover = function () {
                             if (hedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
-                                const color = player === 1 ? '#4361ee' : '#4cc9f0';
+                                const color = player === 1 ? '#4361ee' : '#ffa500';
                                 this.style.backgroundColor = color;
                                 this.style.opacity = '0.7';
                             }
@@ -469,7 +471,7 @@
                         // Restore hover events
                         edge.onmouseover = function () {
                             if (vedge[i][j] < 1 && (player === 1 || (gameMode === 'multi' && player === 2))) {
-                                const color = player === 1 ? '#4361ee' : '#4cc9f0';
+                                const color = player === 1 ? '#4361ee' : '#ffa500';
                                 this.style.backgroundColor = color;
                                 this.style.opacity = '0.7';
                             }
@@ -528,7 +530,7 @@
                 if (gameMode === 'single') {
                     edge.style.backgroundColor = player === 0 ? '#f72585' : '#4361ee';
                 } else {
-                    edge.style.backgroundColor = player === 1 ? '#4361ee' : '#4cc9f0';
+                    edge.style.backgroundColor = player === 1 ? '#4361ee' : '#ffa500';
                 }
                 edge.style.opacity = '1';
                 edge.onmouseover = null;
@@ -554,7 +556,7 @@
                 if (gameMode === 'single') {
                     edge.style.backgroundColor = player === 0 ? '#f72585' : '#4361ee';
                 } else {
-                    edge.style.backgroundColor = player === 1 ? '#4361ee' : '#4cc9f0';
+                    edge.style.backgroundColor = player === 1 ? '#4361ee' : '#ffa500';
                 }
                 edge.style.opacity = '1';
                 edge.onmouseover = null;
@@ -1079,18 +1081,11 @@
         }
         // Initialize the game when page loads
         window.onload = function () {
-            // Default to 5x5 grid
+            // Default to 3x3 grid
             document.getElementById('rowsInput').value = 3;
             document.getElementById('colsInput').value = 3;
             setGameMode('single');
         };
-    </script>
-    <script>
-        // Handle deep linking for installed PWA
-        if (window.location.pathname !== '/index.html' &&
-            !window.location.pathname.endsWith('/')) {
-            window.history.replaceState(null, null, '/index.html');
-        }
     </script>
     <script type="module" src="js/install.js"></script>
 </body>

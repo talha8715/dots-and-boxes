@@ -3,7 +3,7 @@
     --primary-dark: #3a0ca3;
     --secondary: #f72585;
     --secondary-dark: #b5179e;
-    --player3: #4cc9f0;
+    --player2: #ffa500;
     --light: #f8f9fa;
     --dark: #212529;
     --gray: #6c757d;
@@ -98,12 +98,12 @@ body {
 }
 
 .btn-tertiary {
-    background-color: var(--player3);
+    background-color: var(--player2);
     color: var(--white);
 }
 
 .btn-tertiary:hover {
-    background-color: #3aa8d1;
+    background-color: #FF8C00;
     transform: translateY(-2px);
 }
 
@@ -153,7 +153,7 @@ body {
 }
 
 .score-player2 .score-badge {
-    background-color: var(--player3);
+    background-color: var(--player2);
 }
 
 .game-board-container {
@@ -230,13 +230,13 @@ body {
     background-color: var(--primary);
 }
 
-.box-filled.computer,
-.box-filled.player2 {
+.box-filled.computer {
     background-color: var(--secondary);
 }
 
-.box-filled.player3 {
-    background-color: var(--player3);
+.box-filled.player2 {
+    background-color: var(--player2);
+    opacity: 0.5;
 }
 
 .game-info {
@@ -278,8 +278,8 @@ body {
 }
 
 .turn-indicator.player2-turn {
-    background-color: rgba(76, 201, 240, 0.1);
-    color: var(--player3);
+    background-color: rgba(255, 166, 0, 0.1);
+    color: var(--player2);
 }
 
 /* Modal styles */
@@ -501,13 +501,13 @@ body {
     right: 20px;
     z-index: 999;
     animation: pulse 2s infinite;
-  }
-  
-  @media (max-width: 768px) {
+}
+
+@media (max-width: 768px) {
     #installBtn {
-      bottom: 10px;
-      right: 10px;
-      padding: 0.5rem 1rem;
-      font-size: 0.9rem;
+        bottom: 10px;
+        right: 10px;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
     }
-  }
+}
